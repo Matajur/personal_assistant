@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "personal-assistant"
+version = "0.1.0"
+description = "Personal assistant for managing contacts and notes"
+authors = ["Project-Team-1"]
+license = "Apache License 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+setuptools = "^69.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
