@@ -1,5 +1,7 @@
 """Module providing a functionality to manage the contacts in a contact list"""
 
+from datetime import datetime
+
 from source.birthdays import get_birthdays_per_week  # noqa
 from source.classes import (
     BirthdayFormatError,
@@ -10,7 +12,16 @@ from source.classes import (
     RecordValidationError,
     Record,
     AddressBook,
+    Name,
 )
+from source.classes import COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
+
+SPAN = COLUMN_1 + COLUMN_2 + COLUMN_3 + COLUMN_4 + COLUMN_5 + COLUMN_6 + 5
+FIELD = SPAN - COLUMN_1 - 1
+SEPARATOR = "-" * (SPAN + 2)
+INDENT = " " * COLUMN_1
+HEADER = f"|{'#':^{COLUMN_1}}|{'FULLNAME':^{COLUMN_2}}|{'EMAIL':^{COLUMN_3}}|{'PHONES':^{COLUMN_4}}|{'BIRTHDAY':^{COLUMN_5}}|{'ADDRESS':^{COLUMN_6}}|"
+SKIPPER = f"|{INDENT}|{'Operation skipped':<{FIELD}}|"
 
 
 def input_error(func) -> str:
@@ -25,25 +36,42 @@ def input_error(func) -> str:
         try:
             return func(*args, **kwargs)
         except ValueError:
-            return "Provide name and phone."
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Provide name and phone':<{FIELD}}|")
         except KeyError:
-            return "Contact not found."
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Contact not found':<{FIELD}}|")
         except IndexError:
-            return "Provide contact name."
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Provide contact name':<{FIELD}}|")
         except TypeError:
-            return "Provide contact name."
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Provide contact name':<{FIELD}}|")
         except BirthdayFormatError:
-            return "Birthday must be in DD.MM.YYYY format"
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
         except BirthdayValidationError:
-            return "Birthday cannot be in future or more than 100 years ago."
+            print(SEPARATOR)
+            print(
+                f"|{INDENT}|{'Birthday cannot be in future or more than 100 years ago':<{FIELD}}|"
+            )
         except NameValidationError:
-            return "The name must contain at least 3 characters."
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
+            return(None)
         except PhoneIndexError:
-            return "There is no such phone number in the record."
+            print(SEPARATOR)
+            print(
+                f"|{INDENT}|{'There is no such phone number in the record':<{FIELD}}|"
+            )
         except PhoneValidationError:
-            return "Wrong phone number format, should be 10 digits, ex. 1234567890."
+            print(SEPARATOR)
+            print(
+                f"|{INDENT}|{'Wrong phone number format, should be 10 digits, ex. 1234567890':<{FIELD}}|"
+            )
         except RecordValidationError:
-            return "A contact with that name already exists."
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'A contact with that name already exists':<{FIELD}}|")
 
     return inner
 
@@ -66,68 +94,167 @@ def get_command(command: str):
     return cmd
 
 
-def contact_adder(book: AddressBook, *_) -> str:
+def contact_adder(book: AddressBook, *_) -> None:
     """
     Function to add new records to contact book
+
+    :param book: a dictionary with user contacts
+    :return: None, prints only a message about the success or failure of the operation
     """
-    if name_setter(book) == "0":
-        return "|      |Operation cancelled                 |"
-    record = name_setter(book)
+    name = name_setter(book)
+    if name:
+        record = Record(name)
 
-    # address_setter(record)
-    # phone_setter(record)
-    # email_setter(record)
-    # birthday_setter(record)
-    # note_setter(record)
+        address_setter(record)
+        phone_setter(record)
+        email_setter(record)
+        birthday_setter(record)
 
-    book.add_record(record)
-    return f"|Added |{record}"
+        print(SEPARATOR)
+        print(HEADER)
+        print(SEPARATOR)
+        print(f"|{INDENT}|{record}|")
+        print(SEPARATOR)
+        print(f"|{"0":^{COLUMN_1}}|{'Skip'}: ")
+        print(f"|{"1":^{COLUMN_1}}|{'Save'}: ")
+        print(SEPARATOR)
+        decision = input(f"|{INDENT}|{'Save changes to contact book'}: ")
+        if decision == "1":
+            book.add_record(record)
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'New record added to address book':<{FIELD}}|")
+        else:
+            print(SEPARATOR)
+            print(SKIPPER)
 
 
 @input_error
-def name_setter(book: AddressBook) -> str | Record:
+def name_setter(book: AddressBook) -> None | str:
     """
     Function to set record name
+
+    :param book: a dictionary with user contacts
+    :return: None or record name
     """
     while True:
-        name = input("|      |Enter new record name ('0' to exit): ")
+        print(SEPARATOR)
+        name = input(f"|{INDENT}|{'Enter new record name or 0 to exit'}: ")
         if name == "0":
-            return "0"
+            print(SEPARATOR)
+            print(SKIPPER)
+            return None
         if name in book.data.keys():
-            print("|      |Record '{name}' already exists ")
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Record with name {name} already exists':<{FIELD}}|")
+        # name_ = Name(name)
+        if 2 < len(name) < 21:
+            return name
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
 
-        else:
-            record = Record(name)
-        if record:
-            return record
-        else:
-            print("|      |Name should have from 3 up to 20 letters")
+
+def address_setter(record: Record) -> None:
+    """
+    Function to add address to a record
+
+    :param record: a record from contact book
+    :return: None
+    """
+    while True:
+        address = input(f"|{INDENT}|{'Enter address or press Enter to skip'}: ")
+        if address:
+            if 2 < len(address) < 41:
+                record.add_address(address)
+                break
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'The name must contain 3-40 characters':<{FIELD}}|")
+        break
+
+def phone_setter(record: Record) -> None:
+    """
+    Function to add phone number to a record
+
+    :param record: a record from contact book
+    :return: None
+    """
+    while True:
+        phone = input(f"|{INDENT}|{'Enter phone (ex. 0991234567) or press Enter to skip'}: ")
+        if phone:
+            if len(phone) == 10:
+                record.add_phone(phone)
+                break
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'The phone number must have 0991234567 format':<{FIELD}}|")
+        break
+
+def birthday_setter(record: Record) -> None:
+    """
+    Function to add birthday to a record
+
+    :param record: a record from contact book
+    :return: None
+    """
+    while True:
+        birthday = input(f"|{INDENT}|{'Enter birthday (ex. DD.MM.YYYY) or press Enter to skip'}: ")
+        if birthday:
+            try:
+                datetime.strptime(birthday, "%d.%m.%Y").date()
+                record.add_birthday(birthday)
+                break
+            except ValueError:
+                print(SEPARATOR)
+                print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
+                continue
+        break
 
 
-def invalid_command(*_) -> str:
+def email_setter(record: Record) -> None:
+    """
+    Function to add email to a record
+
+    :param record: a record from contact book
+    :return: None
+    """
+    while True:
+        email = input(f"|{INDENT}|{'Enter email (ex. example@mail.com) or press Enter to skip'}: ")
+        if email:
+            if 2 < len(email) < 20:
+                record.add_email(email)
+                break
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'The email must contain 3-40 characters':<{FIELD}}|")
+        break
+
+
+def invalid_command(*_) -> None:
     """
     Ivalid command handler.
 
-    :return: a message about unknown command
+    :return: None, only prints message about invalid command
     """
-    return "|      |Invalid command                 |"
+    print(SEPARATOR)
+    print(f"|{INDENT}|{'Invalid command':<{FIELD}}|")
 
 
-def show_contacts(book: AddressBook, *_) -> str:
+def show_contacts(book: AddressBook, *_) -> None:
     """
     Function of displaying a complete list of contacts.
 
     :param book: a dictionary with user contacts
-    :return: a string with the full contact list or a warning that the
+    :return: None, only prints the contact list or a warning that the
             contact list is empty
     """
     if len(book):
         contacts = dict(sorted(book.items()))
-        result = "Contact list:"
-        for _, record in contacts.items():
-            result += f"\n{record}"
-        return result
-    return "Contact list is empty."
+        print(SEPARATOR)
+        print(HEADER)
+        print(SEPARATOR)
+        for number, record in enumerate(contacts.values()):
+            print(f"|{number+1:^{COLUMN_1}}|{record}|")
+
+    else:
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
 
 
 def parse_input(user_input: str) -> tuple[str, *tuple[str, ...]]:

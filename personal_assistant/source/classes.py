@@ -3,6 +3,13 @@
 from collections import UserDict
 from datetime import datetime
 
+COLUMN_1 = 6
+COLUMN_2 = 20
+COLUMN_3 = 20
+COLUMN_4 = 30
+COLUMN_5 = 12
+COLUMN_6 = 40
+
 
 class BirthdayFormatError(Exception):
     """
@@ -52,6 +59,12 @@ class Field:
         return str(self.value)
 
 
+class Address(Field):
+    """
+    A class for storing an address.
+    """
+
+
 class Birthday(Field):
     """
     A class for storing a birthday. Has format validation (DD.MM.YYYY).
@@ -79,6 +92,12 @@ class Birthday(Field):
 
     def __str__(self):
         return str(self.value.strftime("%d.%m.%Y"))
+
+
+class Email(Field):
+    """
+    A class for storing a birthday. Has format validation (example@email.com).
+    """
 
 
 class Name(Field):
@@ -134,12 +153,26 @@ class Record:
         self.name = Name(name)
         self.phones = []
         self.birthday = None
+        self.email = None
+        self.address = None
+
+    def add_address(self, address: str):
+        """
+        A method that adds an address to the record.
+        """
+        self.address = Address(address)
 
     def add_birthday(self, birthday: str):
         """
         A method that adds a birthday to the record.
         """
         self.birthday = Birthday(birthday)
+
+    def add_email(self, email: str):
+        """
+        A metod that adds an email to the record.
+        """
+        self.email = Email(email)
 
     def add_phone(self, phone: str):
         """
@@ -173,8 +206,12 @@ class Record:
         raise PhoneIndexError()
 
     def __str__(self) -> str:
-        numbers = '; '.join(p.value for p in self.phones) if self.phones else None
-        return f"Contact name: {self.name.value}, phones: {numbers}, birthday: {self.birthday}"
+        numbers = (
+            "; ".join(f"{i+1}: {p.value}" for i, p in enumerate(self.phones))
+            if self.phones
+            else None
+        )
+        return f"{self.name.value:^{COLUMN_2}}|{str(self.email):^{COLUMN_3}}|{str(numbers):^{COLUMN_4}}|{str(self.birthday):^{COLUMN_5}}|{str(self.address):^{COLUMN_6}}"
 
 
 class AddressBook(UserDict):
