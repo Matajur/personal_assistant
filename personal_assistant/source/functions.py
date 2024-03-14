@@ -1,5 +1,6 @@
 """Module providing a functionality to manage the contacts in a contact list"""
 
+import re
 from datetime import datetime
 
 from source.birthdays import get_birthdays_per_week  # noqa
@@ -38,40 +39,49 @@ def input_error(func) -> str:
         except ValueError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'Provide name and phone':<{FIELD}}|")
+            return invalid_command
         except KeyError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'Contact not found':<{FIELD}}|")
+            return invalid_command
         except IndexError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'Provide contact name':<{FIELD}}|")
+            return invalid_command
         except TypeError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'Provide contact name':<{FIELD}}|")
+            return invalid_command
         except BirthdayFormatError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
+            return invalid_command
         except BirthdayValidationError:
             print(SEPARATOR)
             print(
                 f"|{INDENT}|{'Birthday cannot be in future or more than 100 years ago':<{FIELD}}|"
             )
+            return invalid_command
         except NameValidationError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
-            return(None)
+            return invalid_command
         except PhoneIndexError:
             print(SEPARATOR)
             print(
                 f"|{INDENT}|{'There is no such phone number in the record':<{FIELD}}|"
             )
+            return invalid_command
         except PhoneValidationError:
             print(SEPARATOR)
             print(
                 f"|{INDENT}|{'Wrong phone number format, should be 10 digits, ex. 1234567890':<{FIELD}}|"
             )
+            return invalid_command
         except RecordValidationError:
             print(SEPARATOR)
             print(f"|{INDENT}|{'A contact with that name already exists':<{FIELD}}|")
+            return invalid_command
 
     return inner
 
@@ -94,6 +104,7 @@ def get_command(command: str):
     return cmd
 
 
+@input_error
 def contact_adder(book: AddressBook, *_) -> None:
     """
     Function to add new records to contact book
@@ -107,6 +118,9 @@ def contact_adder(book: AddressBook, *_) -> None:
 
         address_setter(record)
         phone_setter(record)
+        if record.phones:
+            print(f"|{INDENT}|{'Would you like to add one more phone or press Enter to skip'}: ")
+            phone_setter(record)
         email_setter(record)
         birthday_setter(record)
 
@@ -128,7 +142,6 @@ def contact_adder(book: AddressBook, *_) -> None:
             print(SKIPPER)
 
 
-@input_error
 def name_setter(book: AddressBook) -> None | str:
     """
     Function to set record name
@@ -145,8 +158,7 @@ def name_setter(book: AddressBook) -> None | str:
             return None
         if name in book.data.keys():
             print(SEPARATOR)
-            print(f"|{INDENT}|{'Record with name {name} already exists':<{FIELD}}|")
-        # name_ = Name(name)
+            print(f"|{INDENT}|{f'Record with name {name} already exists':<{FIELD}}|")
         if 2 < len(name) < 21:
             return name
         print(SEPARATOR)
@@ -167,8 +179,9 @@ def address_setter(record: Record) -> None:
                 record.add_address(address)
                 break
             print(SEPARATOR)
-            print(f"|{INDENT}|{'The name must contain 3-40 characters':<{FIELD}}|")
+            print(f"|{INDENT}|{'The address must contain 3-40 characters':<{FIELD}}|")
         break
+
 
 def phone_setter(record: Record) -> None:
     """
@@ -178,14 +191,16 @@ def phone_setter(record: Record) -> None:
     :return: None
     """
     while True:
-        phone = input(f"|{INDENT}|{'Enter phone (ex. 0991234567) or press Enter to skip'}: ")
+        phone = input(f"|{INDENT}|{'Enter phone (ex. +380991234567) or press Enter to skip'}: ")
         if phone:
-            if len(phone) == 10:
+            if re.match(r"\+\d{12}", phone):
                 record.add_phone(phone)
                 break
             print(SEPARATOR)
-            print(f"|{INDENT}|{'The phone number must have 0991234567 format':<{FIELD}}|")
-        break
+            print(f"|{INDENT}|{'The phone number must have +380991234567 format':<{FIELD}}|")
+        else:
+            break
+
 
 def birthday_setter(record: Record) -> None:
     """
@@ -197,15 +212,19 @@ def birthday_setter(record: Record) -> None:
     while True:
         birthday = input(f"|{INDENT}|{'Enter birthday (ex. DD.MM.YYYY) or press Enter to skip'}: ")
         if birthday:
-            try:
-                datetime.strptime(birthday, "%d.%m.%Y").date()
-                record.add_birthday(birthday)
-                break
-            except ValueError:
+            if re.match(r'^(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.\d{4}$', birthday):
+                birth = datetime.strptime(birthday, "%d.%m.%Y").date()
+                if 0 <= (datetime.today().date() - birth).days <= 100 * 365.4:
+                    record.add_birthday(birthday)
+                    break
                 print(SEPARATOR)
-                print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
-                continue
-        break
+                print(
+                f"|{INDENT}|{'Birthday cannot be in future or more than 100 years ago':<{FIELD}}|"
+                )
+            print(SEPARATOR)
+            print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
+        else:
+            break
 
 
 def email_setter(record: Record) -> None:
@@ -218,12 +237,13 @@ def email_setter(record: Record) -> None:
     while True:
         email = input(f"|{INDENT}|{'Enter email (ex. example@mail.com) or press Enter to skip'}: ")
         if email:
-            if 2 < len(email) < 20:
+            if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
                 record.add_email(email)
                 break
             print(SEPARATOR)
-            print(f"|{INDENT}|{'The email must contain 3-40 characters':<{FIELD}}|")
-        break
+            print(f"|{INDENT}|{'The email must be in example@mail.com format':<{FIELD}}|")
+        else:
+            break
 
 
 def invalid_command(*_) -> None:

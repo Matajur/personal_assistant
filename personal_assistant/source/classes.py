@@ -1,12 +1,13 @@
 """Module providing the classes to manage the contacts in a contact book"""
 
+import re
 from collections import UserDict
 from datetime import datetime
 
 COLUMN_1 = 6
 COLUMN_2 = 20
-COLUMN_3 = 20
-COLUMN_4 = 30
+COLUMN_3 = 25
+COLUMN_4 = 35
 COLUMN_5 = 12
 COLUMN_6 = 40
 
@@ -99,6 +100,22 @@ class Email(Field):
     A class for storing a birthday. Has format validation (example@email.com).
     """
 
+    @property
+    def value(self):
+        """
+        A method that validates name.
+        """
+        return self._value
+
+    @value.setter
+    def value(self, email):
+        """
+        A method that validates name.
+        """
+        if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
+            raise NameValidationError()
+        self._value = email
+
 
 class Name(Field):
     """
@@ -139,7 +156,7 @@ class Phone(Field):
         """
         A method that validates phone number.
         """
-        if not str(phone).isdecimal() or len(str(phone)) != 10:
+        if not re.match(r"\+\d{12}", phone):
             raise PhoneValidationError()
         self._value = phone
 
