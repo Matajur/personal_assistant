@@ -1,0 +1,155 @@
+import configparser
+import re
+import os
+
+# Class to represent notes
+class Note:
+    def __init__(self, note_id, text, tags):
+        # Attributes to store ID, text, and tags of the note
+        self.note_id = note_id
+        self.text = text
+        self.tags = tags
+
+# Function to load notes from file
+def load_notes(config):
+    try:
+        with open(config.get("DEFAULT", "notes_file", fallback="notes.txt"), "r") as f:
+            # Creating a list of notes from the file
+            notes = []
+            for line in f:
+                note_id, text, tags = line.strip().split("|")
+                tags = tags.split(",")
+                notes.append(Note(int(note_id), text, tags))
+        return notes
+    except FileNotFoundError:
+        print("File notes.txt not found.")
+        return []
+    except Exception as e:
+        print(f"Unknown error while loading notes: {e}")
+        return []
+
+# Function to save notes to file
+def save_notes(notes, config):
+    try:
+        # Check if 'notes_file' key exists in config
+        if 'notes_file' not in config['DEFAULT']:
+            raise KeyError("'notes_file' key not found in config")
+        
+        # Writing notes to the file
+        with open(config.get("DEFAULT", "notes_file", fallback="notes.txt"), "w") as f:
+            for note in notes:
+                f.write(f"{note.note_id}|{note.text}|{','.join(note.tags)}\n")
+    except KeyError as e:
+        print(f"Error while saving notes: {e}")
+    except Exception as e:
+        print(f"Error while saving notes: {e}")
+
+# Function to add a new note
+def add_note(notes, config):
+    # Input text and tags for the note
+    text = input("Enter note text: ").strip()
+    if not text:
+        print("Error: Note text cannot be empty.")
+        return
+    tags = input("Enter tags (comma-separated): ").split(",")
+    # Generating a unique ID for the note
+    note_id = len(notes) + 1
+    # Creating a new note and adding it to the list of notes
+    notes.append(Note(note_id, text, tags))
+    # Saving notes
+    save_notes(notes, config)
+
+# Function to search notes by text
+def search_notes(notes):
+    text = input("Enter text to search: ").lower().strip()
+    # Filtering notes by text
+    results = [note for note in notes if text in note.text.lower()]
+    return results
+
+# Function to edit an existing note
+def edit_note(notes, config):
+    note_id = int(input("Enter the ID of the note you want to edit: "))
+    note = find_note_by_id(notes, note_id)
+    if note is None:
+        print("Note not found.")
+        return
+    choice = input("What do you want to edit? (1 - text, 2 - tags): ").strip()
+    if choice == "1":
+        # Changing the text of the note
+        note.text = input("Enter new text: ").strip()
+    elif choice == "2":
+        # Changing the tags of the note
+        note.tags = [tag.strip() for tag in input("Enter new tags (comma-separated): ").split(",")]
+    # Saving the edited notes
+    save_notes(notes, config)
+
+# Function to delete a note
+def delete_note(notes, config):
+    note_id = int(input("Enter the ID of the note you want to delete: "))
+    note = find_note_by_id(notes, note_id)
+    if note is None:
+        print("Note not found.")
+        return
+    # Removing the note from the list
+    notes.remove(note)
+    # Saving the updated list of notes
+    save_notes(notes, config)
+
+# Function to find a note by ID
+def find_note_by_id(notes, note_id):
+    return next((note for note in notes if note.note_id == note_id), None)
+
+# Function to show all notes
+def show_all_notes(notes):
+    if not notes:
+        print("No notes found.")
+    else:
+        for note in notes:
+            print(f"Note {note.note_id}:")
+            print(f"Text: {note.text}")
+            print(f"Tags: {', '.join(note.tags)}")
+            print()
+
+# Main function of the program
+def main():
+    # Reading configuration from file
+    config = configparser.ConfigParser()
+    config_file = "config.ini"
+    if not os.path.exists(config_file):
+        with open(config_file, 'w') as f:
+            f.write("[DEFAULT]\nnotes_file = notes.txt\n")
+    config.read(config_file)
+
+    # Loading notes from file
+    notes = load_notes(config)
+
+    while True:
+        # Displaying the menu to the user
+        print("1 - Add a note")
+        print("2 - Search notes")
+        print("3 - Edit a note")
+        print("4 - Delete a note")
+        print("5 - Show all notes")
+        print("0 - Exit")
+        choice = input("Enter the command number: ").strip()
+        if choice == "1":
+            add_note(notes, config)
+        elif choice == "2":
+            results = search_notes(notes)
+            for note in results:
+                print(f"Text: {note.text}")
+                print(f"Tags: {', '.join(note.tags)}")
+                print()
+        elif choice == "3":
+            edit_note(notes, config)
+        elif choice == "4":      
+            delete_note(notes, config)
+        elif choice == "5":
+            show_all_notes(notes)
+        elif choice == "0":
+            break
+        else:
+            print("Invalid command.")
+
+if __name__ == "__main__":
+    main()
