@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from typing import Tuple
 
-from source.birthdays import get_birthdays_per_week  # noqa
+from source.birthdays import search_upcoming_birthday_contacts  # noqa
 from source.classes import (
     BirthdayFormatError,
     BirthdayValidationError,
@@ -97,6 +97,7 @@ def get_command(command: str):
         "1": show_contacts,
         "2": contact_adder,
         "4": search_contacts_handler,
+        "5": search_upcoming_birthday_contacts,
     }
 
     cmd = commands.get(command)

@@ -1,62 +1,58 @@
 """Module providing a function to display a list of colleagues with upcoming birthdays"""
 
-import calendar
-from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
-from source.classes import AddressBook, Record
+from source.classes import AddressBook, Record, SPAN, COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6  # noqa
 
-TODAY = datetime.now().date()
-TIME_SPAN = 7  # days
+FIELD = SPAN - COLUMN_1 - 1
+SEPARATOR = "-" * (SPAN + 2)
+INDENT = " " * COLUMN_1
+HEADER = f"|{'#':^{COLUMN_1}}|{'FULLNAME':^{COLUMN_2}}|{'EMAIL':^{COLUMN_3}}|{'PHONES':^{COLUMN_4}}|{'BIRTHDAY':^{COLUMN_5}}|{'ADDRESS':^{COLUMN_6}}|"
+SKIPPER = f"|{INDENT}|{'Operation skipped':<{FIELD}}|"
 
 
-def get_birthdays_per_week(book: AddressBook[Record, ...], *_) -> str:
-    """
-    Function to create a list of recods from contact book with upcoming birthdays.
+def search_upcoming_birthday_contacts(book: AddressBook, *_) -> None:
+    if not len(book):
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
+        return
 
-    :param users_list: a list of dictionaries with users and their birthdays
-    :return: a string of weekdays and people who have upcoming birthdays on these days
-    """
-    birthdays = defaultdict(list)
+    days = get_days()
+    today = datetime.now().date()
+    end_date = today + timedelta(days=days)
+    contacts = []
 
-    for user in book.values():
-        # remove users with an inappropriate age
-        if user.birthday.value:
-            birthday = user.birthday.value
-            try:
-                next_birthday = birthday.replace(year=TODAY.year)
-            except ValueError:  # when birthday on February 29
-                next_birthday = birthday.replace(year=TODAY.year, month=3, day=1)
+    for contact in book.values():
+        if contact.birthday is not None:
+            origin_birthday = contact.birthday.value
+            this_year_birthday = datetime(year=today.year, month=origin_birthday.month, day=origin_birthday.day).date()
+            if today <= this_year_birthday <= end_date:
+                contacts.append(contact)
 
-            if TODAY.month == 12 and birthday.month == 1:  # for New Year's Eve
-                next_birthday = next_birthday.replace(year=TODAY.year + 1)
+    show_result(today, end_date, contacts)
 
-            if next_birthday.weekday() == 5:
-                next_birthday += timedelta(days=2)
-            elif next_birthday.weekday() == 6:
-                next_birthday += timedelta(days=1)
 
-            if 0 <= (next_birthday - TODAY).days < TIME_SPAN:
-                birthdays[next_birthday.weekday()].append(user.name.value)
+def get_days() -> int:
+    while True:
+        print(SEPARATOR)
+        input_value = input(f"|{INDENT}|{'Enter the number of days for which to show birthdays'}: ")
+        if input_value.isdigit():
+            return int(input_value)
 
-    # sort defaultdict by numbers of weekdays
-    birthdays = dict(sorted(birthdays.items()))
-    if not birthdays:
-        return "No upcoming birthdays"
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The number must be of integer type only':<{FIELD}}|")
 
-    result = ""
-    # check if there are birthdays this week
-    this_week = dict(filter(lambda day: day[0] >= TODAY.weekday(), birthdays.items()))
-    if this_week:
-        result += "Birthdays this week:"
-        for day, value in this_week.items():
-            result += f"\n{calendar.day_name[day]}: {', '.join(value)}"
 
-    # check if there are birthdays next week
-    next_week = dict(filter(lambda day: day[0] < TODAY.weekday(), birthdays.items()))
-    if next_week:
-        result += "\nBirthdays next week:"
-        for day, value in next_week.items():
-            result += f"\n{calendar.day_name[day]}: {', '.join(value)}"
-
-    return result.strip("\n")
+def show_result(start_day: date, end_day: date, result: []) -> None:
+    if len(result):
+        date_range = start_day.strftime('%d.%m.%Y') + ' - ' + end_day.strftime('%d.%m.%Y')
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'Birthdays in range ' + date_range:<{FIELD}}|")
+        print(SEPARATOR)
+        print(HEADER)
+        print(SEPARATOR)
+        for number, record in enumerate(result):
+            print(f"|{number + 1:^{COLUMN_1}}|{record}|")
+    else:
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
