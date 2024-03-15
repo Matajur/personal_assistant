@@ -222,6 +222,26 @@ class Record:
             index += 1
         raise PhoneIndexError()
 
+    def search_by_name(self, name: str):
+        if self.name.value.lower() == name.lower():
+            return self
+
+    def search_by_phone(self, phone: str):
+        if phone in self.phones:
+            return self
+
+    def search_by_birthday(self, birthday: str):
+        if birthday in self.phones:
+            return self
+
+    def search_by_email(self, email: str):
+        if email in self.phones:
+            return self
+
+    def search_by_address(self, address: str):
+        if self.address.lower() == address.lower():
+            return self
+
     def __str__(self) -> str:
         numbers = (
             "; ".join(f"{i+1}: {p.value}" for i, p in enumerate(self.phones))

@@ -96,6 +96,7 @@ def get_command(command: str):
     commands = {
         "1": show_contacts,
         "2": contact_adder,
+        "4": search_contact,
     }
 
     cmd = commands.get(command)
@@ -129,8 +130,8 @@ def contact_adder(book: AddressBook, *_) -> None:
         print(SEPARATOR)
         print(f"|{INDENT}|{record}|")
         print(SEPARATOR)
-        print(f"|{"0":^{COLUMN_1}}|{'Skip'}: ")
-        print(f"|{"1":^{COLUMN_1}}|{'Save'}: ")
+        print(f"|{'0':^{COLUMN_1}}|{'Skip'}: ")
+        print(f"|{'1':^{COLUMN_1}}|{'Save'}: ")
         print(SEPARATOR)
         decision = input(f"|{INDENT}|{'Save changes to contact book'}: ")
         if decision == "1":
@@ -288,3 +289,65 @@ def parse_input(user_input: str) -> tuple[str, *tuple[str, ...]]:
     cmd, *args = user_input.split()
     cmd = cmd.strip().lower()
     return cmd, *args
+
+
+def search_contact(book: AddressBook, *_) -> None:
+    if not len(book):
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
+        return
+
+    print(SEPARATOR)
+    print(f"|{'1':^{COLUMN_1}}|{'Find contact by name':<{FIELD}}|")
+    print(f"|{'2':^{COLUMN_1}}|{'Find contact by phone':<{FIELD}}|")
+    print(f"|{'3':^{COLUMN_1}}|{'Find contact by birthday':<{FIELD}}|")
+    print(f"|{'4':^{COLUMN_1}}|{'Find contact by e-mail':<{FIELD}}|")
+    print(f"|{'5':^{COLUMN_1}}|{'Find contact by address':<{FIELD}}|")
+    print(f"|{'0':^{COLUMN_1}}|{'Go back':<{FIELD}}|")
+    print(SEPARATOR)
+    decision = input(f"|{INDENT}|{'Type the command'}: ")
+
+    contacts = dict(sorted(book.items()))
+    result = []
+
+    if decision == "1":
+        print(SEPARATOR)
+        name = input(f"|{INDENT}|{'Enter name'}: ")
+        result = search_contact_by_name(contacts, name)
+    elif decision == "2":
+        print(SEPARATOR)
+        phone = input(f"|{INDENT}|{'Enter phone'}: ")
+        result = search_contact_by_phone(contacts, phone)
+    else:
+        return
+
+    if len(result):
+        print(SEPARATOR)
+        print(HEADER)
+        print(SEPARATOR)
+        for number, record in enumerate(result):
+            print(f"|{number+1:^{COLUMN_1}}|{record}|")
+    else:
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
+
+def search_contact_by_name(contacts: Record, name: str) -> []:
+    result = []
+
+    for number, record in enumerate(contacts.values()):
+        search_by_name = record.search_by_name(name)
+        if search_by_name:
+            result.append(search_by_name)
+
+    return result
+
+
+def search_contact_by_phone(contacts: Record, phone: str) -> []:
+    result = []
+
+    for number, record in enumerate(contacts.values()):
+        search_by_phone = record.search_by_phone(phone)
+        if search_by_phone:
+            result.append(search_by_phone)
+
+    return result
