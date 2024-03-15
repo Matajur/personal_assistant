@@ -8,29 +8,39 @@ FIELD = SPAN - COLUMN_1 - 1
 SEPARATOR = "-" * (SPAN + 2)
 INDENT = " " * COLUMN_1
 HEADER = f"|{'#':^{COLUMN_1}}|{'FULLNAME':^{COLUMN_2}}|{'EMAIL':^{COLUMN_3}}|{'PHONES':^{COLUMN_4}}|{'BIRTHDAY':^{COLUMN_5}}|{'ADDRESS':^{COLUMN_6}}|"
-SKIPPER = f"|{INDENT}|{'Operation skipped':<{FIELD}}|"
 
 
 def search_upcoming_birthday_contacts(book: AddressBook, *_) -> None:
+    """
+    The method checks whether there are contacts in the list.
+
+    :return: None
+    """
+
     if not len(book):
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
         return
 
-    handle_contacts(book)
+    handle_book(book)
 
 
-def handle_contacts(book: AddressBook) -> None:
+def handle_book(book: AddressBook) -> None:
+    """
+    The method displays information on found contacts.
+
+    :return: None
+    """
+
     days = get_days()
     today = datetime.now().date()
     end_date = today + timedelta(days=days)
     contacts = get_contacts(book, today, end_date)
 
+    print(SEPARATOR)
+    print(f"|{INDENT}|{'Days range ' + today.strftime('%d.%m.%Y') + ' - ' + end_date.strftime('%d.%m.%Y'):<{FIELD}}|")
+
     if len(contacts):
-        today_formatted = today.strftime('%d.%m.%Y')
-        end_date_formatted = end_date.strftime('%d.%m.%Y')
-        print(SEPARATOR)
-        print(f"|{INDENT}|{'Birthdays in range ' + today_formatted + ' - ' + end_date_formatted:<{FIELD}}|")
         print(SEPARATOR)
         print(HEADER)
         print(SEPARATOR)
@@ -38,14 +48,21 @@ def handle_contacts(book: AddressBook) -> None:
             print(f"|{number + 1:^{COLUMN_1}}|{record}|")
     else:
         print(SEPARATOR)
-        print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
+        print(f"|{' ' * COLUMN_1}|{'There are no happy birthday contacts in this range':<{FIELD}}|")
 
 
 def get_days() -> int:
+    """
+    The method returns the number of days entered by the user.
+
+    :return: integer
+    """
+
     while True:
         print(SEPARATOR)
-        input_value = input(f"|{INDENT}|{'Enter the number of days for which to show birthdays'}: ")
-        if input_value.isdigit():
+        input_value = input(
+            f"|{INDENT}|{'Enter the number of days for which birthdays will be displayed starting from today'}: ")
+        if input_value and input_value.isdigit():
             return int(input_value)
 
         print(SEPARATOR)
@@ -53,11 +70,16 @@ def get_days() -> int:
 
 
 def get_contacts(book: AddressBook, today: date, end_date: date) -> []:
+    """
+    The method filters contacts falling within a date range by the birthday field.
+
+    :return: list
+    """
+
     contacts = []
     for contact in book.values():
         if contact.birthday is not None:
-            origin_birthday = contact.birthday.value
-            this_year_birthday = datetime(year=today.year, month=origin_birthday.month, day=origin_birthday.day).date()
-            if today <= this_year_birthday <= end_date:
+            formatted = datetime(year=today.year, month=contact.birthday.month, day=contact.birthday.day).date()
+            if today <= formatted <= end_date:
                 contacts.append(contact)
     return contacts

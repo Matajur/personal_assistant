@@ -79,6 +79,20 @@ class Birthday(Field):
         """
         return self._value
 
+    @property
+    def month(self):
+        """
+        A method that validates month.
+        """
+        return self._value.month
+
+    @property
+    def day(self):
+        """
+        A method that validates day.
+        """
+        return self._value.day
+
     @value.setter
     def value(self, birthday):
         """
