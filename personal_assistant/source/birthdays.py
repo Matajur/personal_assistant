@@ -1,62 +1,81 @@
 """Module providing a function to display a list of colleagues with upcoming birthdays"""
 
-import calendar
-from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
-from source.classes import AddressBook, Record
-
-TODAY = datetime.now().date()
-TIME_SPAN = 7  # days
+from source.classes import AddressBook
+from source.constants import COLUMN_1, SEPARATOR, INDENT, HEADER, FIELD
 
 
-def get_birthdays_per_week(book: AddressBook[Record, ...], *_) -> str:
+def search_upcoming_birthday_contacts(book: AddressBook, *_) -> None:
     """
-    Function to create a list of recods from contact book with upcoming birthdays.
+    The method checks whether there are contacts in the list.
 
-    :param users_list: a list of dictionaries with users and their birthdays
-    :return: a string of weekdays and people who have upcoming birthdays on these days
+    :return: None
     """
-    birthdays = defaultdict(list)
 
-    for user in book.values():
-        # remove users with an inappropriate age
-        if user.birthday.value:
-            birthday = user.birthday.value
-            try:
-                next_birthday = birthday.replace(year=TODAY.year)
-            except ValueError:  # when birthday on February 29
-                next_birthday = birthday.replace(year=TODAY.year, month=3, day=1)
+    if not len(book):
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
+        return
 
-            if TODAY.month == 12 and birthday.month == 1:  # for New Year's Eve
-                next_birthday = next_birthday.replace(year=TODAY.year + 1)
+    handle_book(book)
 
-            if next_birthday.weekday() == 5:
-                next_birthday += timedelta(days=2)
-            elif next_birthday.weekday() == 6:
-                next_birthday += timedelta(days=1)
 
-            if 0 <= (next_birthday - TODAY).days < TIME_SPAN:
-                birthdays[next_birthday.weekday()].append(user.name.value)
+def handle_book(book: AddressBook) -> None:
+    """
+    The method displays information on found contacts.
 
-    # sort defaultdict by numbers of weekdays
-    birthdays = dict(sorted(birthdays.items()))
-    if not birthdays:
-        return "No upcoming birthdays"
+    :return: None
+    """
 
-    result = ""
-    # check if there are birthdays this week
-    this_week = dict(filter(lambda day: day[0] >= TODAY.weekday(), birthdays.items()))
-    if this_week:
-        result += "Birthdays this week:"
-        for day, value in this_week.items():
-            result += f"\n{calendar.day_name[day]}: {', '.join(value)}"
+    days = get_days()
+    today = datetime.now().date()
+    end_date = today + timedelta(days=days)
+    contacts = get_contacts(book, today, end_date)
 
-    # check if there are birthdays next week
-    next_week = dict(filter(lambda day: day[0] < TODAY.weekday(), birthdays.items()))
-    if next_week:
-        result += "\nBirthdays next week:"
-        for day, value in next_week.items():
-            result += f"\n{calendar.day_name[day]}: {', '.join(value)}"
+    print(SEPARATOR)
+    print(f"|{INDENT}|{'Days range ' + today.strftime('%d.%m.%Y') + ' - ' + end_date.strftime('%d.%m.%Y'):<{FIELD}}|")
 
-    return result.strip("\n")
+    if len(contacts):
+        print(SEPARATOR)
+        print(HEADER)
+        print(SEPARATOR)
+        for number, record in enumerate(contacts):
+            print(f"|{number + 1:^{COLUMN_1}}|{record}|")
+    else:
+        print(SEPARATOR)
+        print(f"|{' ' * COLUMN_1}|{'There are no happy birthday contacts in this range':<{FIELD}}|")
+
+
+def get_days() -> int:
+    """
+    The method returns the number of days entered by the user.
+
+    :return: integer
+    """
+
+    while True:
+        print(SEPARATOR)
+        input_value = input(
+            f"|{INDENT}|{'Enter the number of days for which birthdays will be displayed starting from today'}: ")
+        if input_value and input_value.isdigit():
+            return int(input_value)
+
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The number must be of integer type only':<{FIELD}}|")
+
+
+def get_contacts(book: AddressBook, today: date, end_date: date) -> []:
+    """
+    The method filters contacts falling within a date range by the birthday field.
+
+    :return: list
+    """
+
+    contacts = []
+    for contact in book.values():
+        if contact.birthday is not None:
+            formatted = datetime(year=today.year, month=contact.birthday.month, day=contact.birthday.day).date()
+            if today <= formatted <= end_date:
+                contacts.append(contact)
+    return contacts

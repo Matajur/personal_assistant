@@ -2,8 +2,9 @@
 
 import re
 from datetime import datetime
+from typing import Tuple
 
-from source.birthdays import get_birthdays_per_week  # noqa
+from source.birthdays import search_upcoming_birthday_contacts
 from source.classes import (
     BirthdayFormatError,
     BirthdayValidationError,
@@ -13,16 +14,9 @@ from source.classes import (
     RecordValidationError,
     Record,
     AddressBook,
-    Name,
 )
-from source.classes import COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
-
-SPAN = COLUMN_1 + COLUMN_2 + COLUMN_3 + COLUMN_4 + COLUMN_5 + COLUMN_6 + 5
-FIELD = SPAN - COLUMN_1 - 1
-SEPARATOR = "-" * (SPAN + 2)
-INDENT = " " * COLUMN_1
-HEADER = f"|{'#':^{COLUMN_1}}|{'FULLNAME':^{COLUMN_2}}|{'EMAIL':^{COLUMN_3}}|{'PHONES':^{COLUMN_4}}|{'BIRTHDAY':^{COLUMN_5}}|{'ADDRESS':^{COLUMN_6}}|"
-SKIPPER = f"|{INDENT}|{'Operation skipped':<{FIELD}}|"
+from source.constants import COLUMN_1, SEPARATOR, INDENT, FIELD, HEADER, SKIPPER
+from source.search_contacts import search_contacts_by_field
 
 
 def input_error(func) -> str:
@@ -96,6 +90,8 @@ def get_command(command: str):
     commands = {
         "1": show_contacts,
         "2": contact_adder,
+        "4": search_contacts_by_field,
+        "5": search_upcoming_birthday_contacts,
     }
 
     cmd = commands.get(command)
@@ -129,8 +125,8 @@ def contact_adder(book: AddressBook, *_) -> None:
         print(SEPARATOR)
         print(f"|{INDENT}|{record}|")
         print(SEPARATOR)
-        print(f"|{"0":^{COLUMN_1}}|{'Skip'}: ")
-        print(f"|{"1":^{COLUMN_1}}|{'Save'}: ")
+        print(f"|{'0':^{COLUMN_1}}|{'Skip'}: ")
+        print(f"|{'1':^{COLUMN_1}}|{'Save'}: ")
         print(SEPARATOR)
         decision = input(f"|{INDENT}|{'Save changes to contact book'}: ")
         if decision == "1":
@@ -219,7 +215,7 @@ def birthday_setter(record: Record) -> None:
                     break
                 print(SEPARATOR)
                 print(
-                f"|{INDENT}|{'Birthday cannot be in future or more than 100 years ago':<{FIELD}}|"
+                    f"|{INDENT}|{'Birthday cannot be in future or more than 100 years ago':<{FIELD}}|"
                 )
             print(SEPARATOR)
             print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
@@ -270,14 +266,14 @@ def show_contacts(book: AddressBook, *_) -> None:
         print(HEADER)
         print(SEPARATOR)
         for number, record in enumerate(contacts.values()):
-            print(f"|{number+1:^{COLUMN_1}}|{record}|")
+            print(f"|{number + 1:^{COLUMN_1}}|{record}|")
 
     else:
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
 
 
-def parse_input(user_input: str) -> tuple[str, *tuple[str, ...]]:
+def parse_input(user_input: str) -> Tuple[str, ...]:
     """
     Function to parse commands received from the user using the CLI.
 
