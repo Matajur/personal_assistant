@@ -10,6 +10,7 @@ COLUMN_3 = 25
 COLUMN_4 = 35
 COLUMN_5 = 12
 COLUMN_6 = 40
+SPAN = COLUMN_1 + COLUMN_2 + COLUMN_3 + COLUMN_4 + COLUMN_5 + COLUMN_6 + 5
 
 
 class BirthdayFormatError(Exception):
@@ -245,7 +246,7 @@ class Record:
 
     def __str__(self) -> str:
         numbers = (
-            "; ".join(f"{i+1}: {p.value}" for i, p in enumerate(self.phones))
+            "; ".join(f"{i + 1}: {p.value}" for i, p in enumerate(self.phones))
             if self.phones
             else None
         )
