@@ -7,22 +7,35 @@ from source.classes import (Record, AddressBook)
 from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER
 
 
-def search_contacts_handler(book: AddressBook, *_) -> None:
+def search_contacts_by_field(book: AddressBook, *_) -> None:
+    """
+    The method for searching contacts.
+
+    :param book: An AddressBook
+    :return: None
+    """
+
     if not len(book):
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
         return
 
-    fn = get_search_method()
-    if not fn:
+    handler = get_search_by_method()
+    if not handler:
         return
 
     contacts = dict(sorted(book.items()))
-    result = fn(contacts)
-    handle_search_result(result)
+    result = handler(contacts)
+    show_result(result)
 
 
-def get_search_method() -> Callable[[Any], Any]:
+def get_search_by_method() -> Callable[[Any], Any]:
+    """
+    The method allows you to select the field to be searched in and returns the desired function.
+
+    :return: Callable
+    """
+
     print(SEPARATOR)
     print(f"|{'1':^{COLUMN_1}}|{'Find contact by name':<{FIELD}}|")
     print(f"|{'2':^{COLUMN_1}}|{'Find contact by phone':<{FIELD}}|")
@@ -43,6 +56,13 @@ def get_search_method() -> Callable[[Any], Any]:
 
 
 def search_contacts_by_name(contacts: Record) -> []:
+    """
+    The method for searching contacts by name.
+
+    :param contacts: The contacts
+    :return: The list of contacts
+    """
+
     while True:
         print(SEPARATOR)
         input_value = input(f"|{INDENT}|{'Enter name'}: ")
@@ -59,6 +79,13 @@ def search_contacts_by_name(contacts: Record) -> []:
 
 
 def search_contacts_by_phone(contacts: Record) -> []:
+    """
+    The method for searching contacts by phone.
+
+    :param contacts: The contacts
+    :return: The list of contacts
+    """
+
     while True:
         print(SEPARATOR)
         input_value = input(f"|{INDENT}|{'Enter phone (ex. +380991234567)'}: ")
@@ -75,6 +102,13 @@ def search_contacts_by_phone(contacts: Record) -> []:
 
 
 def search_contacts_by_birthday(contacts: Record) -> []:
+    """
+    The method for searching contacts by birthday.
+
+    :param contacts: The contacts
+    :return: The list of contacts
+    """
+
     while True:
         print(SEPARATOR)
         input_value = input(f"|{INDENT}|{'Enter birthday (ex. DD.MM.YYYY)'}: ")
@@ -91,6 +125,13 @@ def search_contacts_by_birthday(contacts: Record) -> []:
 
 
 def search_contacts_by_email(contacts: Record) -> []:
+    """
+    The method for searching contacts by email.
+
+    :param contacts: The contacts
+    :return: The list of contacts
+    """
+
     while True:
         print(SEPARATOR)
         input_value = input(f"|{INDENT}|{'Enter email (ex. example@mail.com)'}: ")
@@ -107,6 +148,13 @@ def search_contacts_by_email(contacts: Record) -> []:
 
 
 def search_contacts_by_address(contacts: Record) -> []:
+    """
+    The method for searching contacts by address.
+
+    :param contacts: The contacts
+    :return: The list of contacts
+    """
+
     while True:
         print(SEPARATOR)
         input_value = input(f"|{INDENT}|{'Enter address or press Enter to skip'}: ")
@@ -122,7 +170,14 @@ def search_contacts_by_address(contacts: Record) -> []:
         print(f"|{INDENT}|{'The address must contain 3-40 characters':<{FIELD}}|")
 
 
-def handle_search_result(result: []) -> None:
+def show_result(result: []) -> None:
+    """
+    The method to display the result.
+
+    :param result: The list of contacts
+    :return: None
+    """
+
     if len(result):
         print(SEPARATOR)
         print(HEADER)

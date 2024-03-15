@@ -16,7 +16,7 @@ from source.classes import (
     AddressBook,
 )
 from source.constants import COLUMN_1, SEPARATOR, INDENT, FIELD, HEADER, SKIPPER
-from source.search_contacts import search_contacts_handler
+from source.search_contacts import search_contacts_by_field
 
 
 def input_error(func) -> str:
@@ -90,7 +90,7 @@ def get_command(command: str):
     commands = {
         "1": show_contacts,
         "2": contact_adder,
-        "4": search_contacts_handler,
+        "4": search_contacts_by_field,
         "5": search_upcoming_birthday_contacts,
     }
 
