@@ -2,6 +2,7 @@
 
 import re
 from datetime import datetime
+from typing import Tuple, Callable, Any
 
 from source.birthdays import get_birthdays_per_week  # noqa
 from source.classes import (
@@ -277,7 +278,7 @@ def show_contacts(book: AddressBook, *_) -> None:
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
 
 
-def parse_input(user_input: str) -> tuple[str, *tuple[str, ...]]:
+def parse_input(user_input: str) -> Tuple[str, ...]:
     """
     Function to parse commands received from the user using the CLI.
 
@@ -296,13 +297,14 @@ def search_contacts_handler(book: AddressBook, *_) -> None:
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
         return
 
-    search_method = get_search_method()
-    if not search_method:
+    fn = get_search_method()
+    if not fn:
         return
 
     contacts = dict(sorted(book.items()))
-    result = search_method(contacts)
+    result = fn(contacts)
     handle_search_result(result)
+
 
 def get_search_method() -> Callable[[Any], Any]:
     print(SEPARATOR)
@@ -315,10 +317,94 @@ def get_search_method() -> Callable[[Any], Any]:
     print(SEPARATOR)
     command = input(f"|{INDENT}|{'Type the command'}: ")
     commands = {
-        "1": search_contact_by_name,
-        "2": search_contact_by_phone,
+        "1": search_contacts_by_name,
+        "2": search_contacts_by_phone,
+        "3": search_contacts_by_birthday,
+        "4": search_contacts_by_email,
+        "5": search_contacts_by_address,
     }
     return commands.get(command)
+
+
+def search_contacts_by_name(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
+        input_value = input(f"|{INDENT}|{'Enter name'}: ")
+        if 2 < len(input_value) < 21:
+            result = []
+            for number, record in enumerate(contacts.values()):
+                search_by_name = record.search_by_name(input_value)
+                if search_by_name:
+                    result.append(search_by_name)
+            return result
+
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
+
+
+def search_contacts_by_phone(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
+        input_value = input(f"|{INDENT}|{'Enter phone (ex. +380991234567)'}: ")
+        if re.match(r"\+\d{12}", input_value):
+            result = []
+            for number, record in enumerate(contacts.values()):
+                search_by_phone = record.search_by_phone(input_value)
+                if search_by_phone:
+                    result.append(search_by_phone)
+            return result
+
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The phone number must have +380991234567 format':<{FIELD}}|")
+
+
+def search_contacts_by_birthday(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
+        input_value = input(f"|{INDENT}|{'Enter birthday (ex. DD.MM.YYYY)'}: ")
+        if re.match(r'^(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.\d{4}$', input_value):
+            result = []
+            for number, record in enumerate(contacts.values()):
+                search_by_birthday = record.search_by_birthday(input_value)
+                if search_by_birthday:
+                    result.append(search_by_birthday)
+            return result
+
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
+
+
+def search_contacts_by_email(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
+        input_value = input(f"|{INDENT}|{'Enter email (ex. example@mail.com)'}: ")
+        if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', input_value):
+            result = []
+            for number, record in enumerate(contacts.values()):
+                search_by_email = record.search_by_email(input_value)
+                if search_by_email:
+                    result.append(search_by_email)
+            return result
+
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The email must be in example@mail.com format':<{FIELD}}|")
+
+
+def search_contacts_by_address(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
+        input_value = input(f"|{INDENT}|{'Enter address or press Enter to skip'}: ")
+        if 2 < len(input_value) < 41:
+            result = []
+            for number, record in enumerate(contacts.values()):
+                search_by_address = record.search_by_address(input_value)
+                if search_by_address:
+                    result.append(search_by_address)
+            return result
+
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The address must contain 3-40 characters':<{FIELD}}|")
+
 
 def handle_search_result(result: []) -> None:
     if len(result):
@@ -330,36 +416,3 @@ def handle_search_result(result: []) -> None:
     else:
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
-
-def search_contact_by_name(contacts: Record) -> []:
-    while True:
-        print(SEPARATOR)
-
-        result = []
-        name = input(f"|{INDENT}|{'Enter name'}: ")
-        if 2 < len(name) < 21:
-            for number, record in enumerate(contacts.values()):
-                search_by_name = record.search_by_name(name)
-                if search_by_name:
-                    result.append(search_by_name)
-            return result
-
-        print(SEPARATOR)
-        print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
-
-
-def search_contact_by_phone(contacts: Record) -> []:
-    while True:
-        print(SEPARATOR)
-
-        result = []
-        phone = input(f"|{INDENT}|{'Enter phone (ex. +380991234567)'}: ")
-        if re.match(r"\+\d{12}", phone):
-            for number, record in enumerate(contacts.values()):
-                search_by_phone = record.search_by_phone(phone)
-                if search_by_phone:
-                    result.append(search_by_phone)
-            return result
-
-        print(SEPARATOR)
-        print(f"|{INDENT}|{'The phone number must have +380991234567 format':<{FIELD}}|")

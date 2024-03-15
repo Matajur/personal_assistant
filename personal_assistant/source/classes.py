@@ -232,15 +232,15 @@ class Record:
                 return self
 
     def search_by_birthday(self, birthday: str):
-        if birthday in self.phones:
+        if str(self.birthday) == birthday:
             return self
 
     def search_by_email(self, email: str):
-        if email in self.phones:
+        if str(self.email).lower() == email.lower():
             return self
 
     def search_by_address(self, address: str):
-        if self.address.lower() == address.lower():
+        if str(self.address).lower() == address.lower():
             return self
 
     def __str__(self) -> str:
