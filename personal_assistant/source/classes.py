@@ -227,8 +227,9 @@ class Record:
             return self
 
     def search_by_phone(self, phone: str):
-        if phone in self.phones:
-            return self
+        for item in self.phones:
+            if item.value == phone:
+                return self
 
     def search_by_birthday(self, birthday: str):
         if birthday in self.phones:

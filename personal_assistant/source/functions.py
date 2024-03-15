@@ -13,7 +13,6 @@ from source.classes import (
     RecordValidationError,
     Record,
     AddressBook,
-    Name,
 )
 from source.classes import COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
 
@@ -96,7 +95,7 @@ def get_command(command: str):
     commands = {
         "1": show_contacts,
         "2": contact_adder,
-        "4": search_contact,
+        "4": search_contacts_handler,
     }
 
     cmd = commands.get(command)
@@ -291,36 +290,37 @@ def parse_input(user_input: str) -> tuple[str, *tuple[str, ...]]:
     return cmd, *args
 
 
-def search_contact(book: AddressBook, *_) -> None:
+def search_contacts_handler(book: AddressBook, *_) -> None:
     if not len(book):
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
         return
 
+    search_method = get_search_method()
+    if not search_method:
+        return
+
+    contacts = dict(sorted(book.items()))
+    result = search_method(contacts)
+    handle_search_result(result)
+
+def get_search_method() -> Callable[[Any], Any]:
     print(SEPARATOR)
     print(f"|{'1':^{COLUMN_1}}|{'Find contact by name':<{FIELD}}|")
     print(f"|{'2':^{COLUMN_1}}|{'Find contact by phone':<{FIELD}}|")
     print(f"|{'3':^{COLUMN_1}}|{'Find contact by birthday':<{FIELD}}|")
     print(f"|{'4':^{COLUMN_1}}|{'Find contact by e-mail':<{FIELD}}|")
     print(f"|{'5':^{COLUMN_1}}|{'Find contact by address':<{FIELD}}|")
-    print(f"|{'0':^{COLUMN_1}}|{'Go back':<{FIELD}}|")
+    print(f"|{INDENT}|{'Other to exit':<{FIELD}}|")
     print(SEPARATOR)
-    decision = input(f"|{INDENT}|{'Type the command'}: ")
+    command = input(f"|{INDENT}|{'Type the command'}: ")
+    commands = {
+        "1": search_contact_by_name,
+        "2": search_contact_by_phone,
+    }
+    return commands.get(command)
 
-    contacts = dict(sorted(book.items()))
-    result = []
-
-    if decision == "1":
-        print(SEPARATOR)
-        name = input(f"|{INDENT}|{'Enter name'}: ")
-        result = search_contact_by_name(contacts, name)
-    elif decision == "2":
-        print(SEPARATOR)
-        phone = input(f"|{INDENT}|{'Enter phone'}: ")
-        result = search_contact_by_phone(contacts, phone)
-    else:
-        return
-
+def handle_search_result(result: []) -> None:
     if len(result):
         print(SEPARATOR)
         print(HEADER)
@@ -331,23 +331,35 @@ def search_contact(book: AddressBook, *_) -> None:
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
 
-def search_contact_by_name(contacts: Record, name: str) -> []:
-    result = []
+def search_contact_by_name(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
 
-    for number, record in enumerate(contacts.values()):
-        search_by_name = record.search_by_name(name)
-        if search_by_name:
-            result.append(search_by_name)
+        result = []
+        name = input(f"|{INDENT}|{'Enter name'}: ")
+        if 2 < len(name) < 21:
+            for number, record in enumerate(contacts.values()):
+                search_by_name = record.search_by_name(name)
+                if search_by_name:
+                    result.append(search_by_name)
+            return result
 
-    return result
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
 
 
-def search_contact_by_phone(contacts: Record, phone: str) -> []:
-    result = []
+def search_contact_by_phone(contacts: Record) -> []:
+    while True:
+        print(SEPARATOR)
 
-    for number, record in enumerate(contacts.values()):
-        search_by_phone = record.search_by_phone(phone)
-        if search_by_phone:
-            result.append(search_by_phone)
+        result = []
+        phone = input(f"|{INDENT}|{'Enter phone (ex. +380991234567)'}: ")
+        if re.match(r"\+\d{12}", phone):
+            for number, record in enumerate(contacts.values()):
+                search_by_phone = record.search_by_phone(phone)
+                if search_by_phone:
+                    result.append(search_by_phone)
+            return result
 
-    return result
+        print(SEPARATOR)
+        print(f"|{INDENT}|{'The phone number must have +380991234567 format':<{FIELD}}|")
