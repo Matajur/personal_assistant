@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from typing import Tuple
 
-from source.birthdays import search_upcoming_birthday_contacts  # noqa
+from source.birthdays import search_upcoming_birthday_contacts
 from source.classes import (
     BirthdayFormatError,
     BirthdayValidationError,
@@ -15,14 +15,8 @@ from source.classes import (
     Record,
     AddressBook,
 )
-from source.classes import COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6, SPAN  # noqa
-from source.search_contacts import search_contacts_handler  # noqa
-
-FIELD = SPAN - COLUMN_1 - 1
-SEPARATOR = "-" * (SPAN + 2)
-INDENT = " " * COLUMN_1
-HEADER = f"|{'#':^{COLUMN_1}}|{'FULLNAME':^{COLUMN_2}}|{'EMAIL':^{COLUMN_3}}|{'PHONES':^{COLUMN_4}}|{'BIRTHDAY':^{COLUMN_5}}|{'ADDRESS':^{COLUMN_6}}|"
-SKIPPER = f"|{INDENT}|{'Operation skipped':<{FIELD}}|"
+from source.constants import COLUMN_1, SEPARATOR, INDENT, FIELD, HEADER, SKIPPER
+from source.search_contacts import search_contacts_handler
 
 
 def input_error(func) -> str:

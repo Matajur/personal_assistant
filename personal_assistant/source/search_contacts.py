@@ -3,13 +3,8 @@
 import re
 from typing import Callable, Any
 
-from source.classes import COLUMN_1, COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6, SPAN  # noqa
-from source.classes import (Record, AddressBook)  # noqa
-
-FIELD = SPAN - COLUMN_1 - 1
-SEPARATOR = "-" * (SPAN + 2)
-INDENT = " " * COLUMN_1
-HEADER = f"|{'#':^{COLUMN_1}}|{'FULLNAME':^{COLUMN_2}}|{'EMAIL':^{COLUMN_3}}|{'PHONES':^{COLUMN_4}}|{'BIRTHDAY':^{COLUMN_5}}|{'ADDRESS':^{COLUMN_6}}|"
+from source.classes import (Record, AddressBook)
+from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER
 
 
 def search_contacts_handler(book: AddressBook, *_) -> None:

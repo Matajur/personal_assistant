@@ -4,13 +4,7 @@ import re
 from collections import UserDict
 from datetime import datetime
 
-COLUMN_1 = 6
-COLUMN_2 = 20
-COLUMN_3 = 25
-COLUMN_4 = 35
-COLUMN_5 = 12
-COLUMN_6 = 40
-SPAN = COLUMN_1 + COLUMN_2 + COLUMN_3 + COLUMN_4 + COLUMN_5 + COLUMN_6 + 5
+from source.constants import COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
 
 
 class BirthdayFormatError(Exception):
@@ -77,6 +71,7 @@ class Birthday(Field):
         """
         A method that validates name.
         """
+
         return self._value
 
     @property
@@ -84,6 +79,7 @@ class Birthday(Field):
         """
         A method that validates month.
         """
+
         return self._value.month
 
     @property
@@ -91,6 +87,7 @@ class Birthday(Field):
         """
         A method that validates day.
         """
+
         return self._value.day
 
     @value.setter
@@ -98,6 +95,7 @@ class Birthday(Field):
         """
         A method that validates name.
         """
+
         try:
             birth = datetime.strptime(birthday, "%d.%m.%Y").date()
         except ValueError as exc:
@@ -120,6 +118,7 @@ class Email(Field):
         """
         A method that validates name.
         """
+
         return self._value
 
     @value.setter
@@ -142,6 +141,7 @@ class Name(Field):
         """
         A method that validates name.
         """
+
         return self._value
 
     @value.setter
@@ -149,6 +149,7 @@ class Name(Field):
         """
         A method that validates name.
         """
+
         if len(str(name)) < 3:
             raise NameValidationError()
         self._value = name
@@ -164,6 +165,7 @@ class Phone(Field):
         """
         A method that validates phone number.
         """
+
         return self._value
 
     @value.setter
@@ -171,6 +173,7 @@ class Phone(Field):
         """
         A method that validates phone number.
         """
+
         if not re.match(r"\+\d{12}", phone):
             raise PhoneValidationError()
         self._value = phone
@@ -192,30 +195,35 @@ class Record:
         """
         A method that adds an address to the record.
         """
+
         self.address = Address(address)
 
     def add_birthday(self, birthday: str):
         """
         A method that adds a birthday to the record.
         """
+
         self.birthday = Birthday(birthday)
 
     def add_email(self, email: str):
         """
         A metod that adds an email to the record.
         """
+
         self.email = Email(email)
 
     def add_phone(self, phone: str):
         """
         A method that adds a new phone number to the record.
         """
+
         self.phones.append(Phone(phone))
 
     def remove_phone(self, phone: str):
         """
         A method that removes a phone number from the record.
         """
+
         index = self.find_phone(phone)
         self.phones.pop(index)
 
@@ -223,6 +231,7 @@ class Record:
         """
         A method that edits a phone number in the record.
         """
+
         index = self.find_phone(phones[0])
         self.phones[index] = Phone(phones[1])
 
@@ -230,6 +239,7 @@ class Record:
         """
         A method that finds an index of the phone number in the record.
         """
+
         index = 0
         for item in self.phones:
             if item.value == phone:
@@ -238,23 +248,43 @@ class Record:
         raise PhoneIndexError()
 
     def search_by_name(self, name: str):
+        """
+        The method checks if the name matches the passed value.
+        """
+
         if self.name.value.lower() == name.lower():
             return self
 
     def search_by_phone(self, phone: str):
+        """
+        The method checks if the phone matches the passed value.
+        """
+
         for item in self.phones:
             if item.value == phone:
                 return self
 
     def search_by_birthday(self, birthday: str):
+        """
+        The method checks if the birthday matches the passed value.
+        """
+
         if str(self.birthday) == birthday:
             return self
 
     def search_by_email(self, email: str):
+        """
+        The method checks if the email matches the passed value.
+        """
+
         if str(self.email).lower() == email.lower():
             return self
 
     def search_by_address(self, address: str):
+        """
+        The method checks if the address matches the passed value.
+        """
+
         if str(self.address).lower() == address.lower():
             return self
 
@@ -276,6 +306,7 @@ class AddressBook(UserDict):
         """
         A method that adds a record to the address book.
         """
+
         if str(record.name) in self.data.keys():
             raise RecordValidationError()
         self.data[str(record.name)] = record
@@ -284,10 +315,12 @@ class AddressBook(UserDict):
         """
         A method that finds a record in the address book.
         """
+
         return self.data[name]
 
     def delete(self, name: str) -> None:
         """
         A method that removes a record from the address book.
         """
+
         self.data.pop(name)
