@@ -2,10 +2,9 @@
 
 import pickle
 
-from source.functions import get_command, parse_input
 from source.classes import AddressBook
-from source.functions import COLUMN_1, SPAN, FIELD, INDENT, SEPARATOR
-
+from source.constants import COLUMN_1, SPAN, FIELD, INDENT, SEPARATOR
+from source.functions import get_command, parse_input
 
 BACKUP = "source/backup.dat"
 
