@@ -3,8 +3,8 @@
 import re
 from typing import Callable, Any
 
-from source.classes import (Record, AddressBook)
-from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER
+from source.classes import Record, AddressBook, NoteBook
+from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER, Color
 
 
 def search_contacts_by_field(book: AddressBook, *_) -> None:
@@ -17,7 +17,9 @@ def search_contacts_by_field(book: AddressBook, *_) -> None:
 
     if not len(book):
         print(SEPARATOR)
-        print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
+        print(
+            Color.YELLOW + f"{INDENT}{'Contact book is empty':<{FIELD}}|" + Color.RESET
+        )
         return
 
     handler = get_search_by_method()
@@ -42,9 +44,9 @@ def get_search_by_method() -> Callable[[Any], Any]:
     print(f"|{'3':^{COLUMN_1}}|{'Find contact by birthday':<{FIELD}}|")
     print(f"|{'4':^{COLUMN_1}}|{'Find contact by e-mail':<{FIELD}}|")
     print(f"|{'5':^{COLUMN_1}}|{'Find contact by address':<{FIELD}}|")
-    print(f"|{INDENT}|{'Other to exit':<{FIELD}}|")
+    print(f"{INDENT}{'Other to exit':<{FIELD}}|")
     print(SEPARATOR)
-    command = input(f"|{INDENT}|{'Type the command'}: ")
+    command = input(Color.BLUE + f"{INDENT}{'Type the command'}: " + Color.RESET)
     commands = {
         "1": search_contacts_by_name,
         "2": search_contacts_by_phone,
@@ -55,7 +57,7 @@ def get_search_by_method() -> Callable[[Any], Any]:
     return commands.get(command)
 
 
-def search_contacts_by_name(contacts: Record) -> []:
+def search_contacts_by_name(contacts: AddressBook) -> list:
     """
     The method for searching contacts by name.
 
@@ -65,7 +67,7 @@ def search_contacts_by_name(contacts: Record) -> []:
 
     while True:
         print(SEPARATOR)
-        input_value = input(f"|{INDENT}|{'Enter name'}: ")
+        input_value = input(Color.BLUE + f"{INDENT}{'Enter name'}: " + Color.RESET)
         if 2 < len(input_value) < 21:
             result = []
             for number, record in enumerate(contacts.values()):
@@ -75,10 +77,14 @@ def search_contacts_by_name(contacts: Record) -> []:
             return result
 
         print(SEPARATOR)
-        print(f"|{INDENT}|{'The name must contain 3-20 characters':<{FIELD}}|")
+        print(
+            Color.RED
+            + f"{INDENT}{'The name must contain 3-20 characters':<{FIELD}}|"
+            + Color.RESET
+        )
 
 
-def search_contacts_by_phone(contacts: Record) -> []:
+def search_contacts_by_phone(contacts: AddressBook) -> list:
     """
     The method for searching contacts by phone.
 
@@ -88,7 +94,9 @@ def search_contacts_by_phone(contacts: Record) -> []:
 
     while True:
         print(SEPARATOR)
-        input_value = input(f"|{INDENT}|{'Enter phone (ex. +380991234567)'}: ")
+        input_value = input(
+            Color.BLUE + f"{INDENT}{'Enter phone (ex. +380991234567)'}: " + Color.RESET
+        )
         if re.match(r"\+\d{12}", input_value):
             result = []
             for number, record in enumerate(contacts.values()):
@@ -98,10 +106,14 @@ def search_contacts_by_phone(contacts: Record) -> []:
             return result
 
         print(SEPARATOR)
-        print(f"|{INDENT}|{'The phone number must have +380991234567 format':<{FIELD}}|")
+        print(
+            Color.RED
+            + f"{INDENT}{'The phone number must have +380991234567 format':<{FIELD}}|"
+            + Color.RESET
+        )
 
 
-def search_contacts_by_birthday(contacts: Record) -> []:
+def search_contacts_by_birthday(contacts: AddressBook) -> list:
     """
     The method for searching contacts by birthday.
 
@@ -111,8 +123,12 @@ def search_contacts_by_birthday(contacts: Record) -> []:
 
     while True:
         print(SEPARATOR)
-        input_value = input(f"|{INDENT}|{'Enter birthday (ex. DD.MM.YYYY)'}: ")
-        if re.match(r'^(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.\d{4}$', input_value):
+        input_value = input(
+            Color.BLUE + f"{INDENT}{'Enter birthday (ex. DD.MM.YYYY)'}: " + Color.RESET
+        )
+        if re.match(
+            r"^(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.\d{4}$", input_value
+        ):
             result = []
             for number, record in enumerate(contacts.values()):
                 search_by_birthday = record.search_by_birthday(input_value)
@@ -121,10 +137,14 @@ def search_contacts_by_birthday(contacts: Record) -> []:
             return result
 
         print(SEPARATOR)
-        print(f"|{INDENT}|{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|")
+        print(
+            Color.RED
+            + f"{INDENT}{'Birthday must be in DD.MM.YYYY format':<{FIELD}}|"
+            + Color.RESET
+        )
 
 
-def search_contacts_by_email(contacts: Record) -> []:
+def search_contacts_by_email(contacts: AddressBook) -> list:
     """
     The method for searching contacts by email.
 
@@ -134,8 +154,12 @@ def search_contacts_by_email(contacts: Record) -> []:
 
     while True:
         print(SEPARATOR)
-        input_value = input(f"|{INDENT}|{'Enter email (ex. example@mail.com)'}: ")
-        if re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', input_value):
+        input_value = input(
+            Color.BLUE
+            + f"{INDENT}{'Enter email (ex. example@mail.com)'}: "
+            + Color.RESET
+        )
+        if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", input_value):
             result = []
             for number, record in enumerate(contacts.values()):
                 search_by_email = record.search_by_email(input_value)
@@ -144,10 +168,14 @@ def search_contacts_by_email(contacts: Record) -> []:
             return result
 
         print(SEPARATOR)
-        print(f"|{INDENT}|{'The email must be in example@mail.com format':<{FIELD}}|")
+        print(
+            Color.RED
+            + f"{INDENT}{'The email must be in example@mail.com format':<{FIELD}}|"
+            + Color.RESET
+        )
 
 
-def search_contacts_by_address(contacts: Record) -> []:
+def search_contacts_by_address(contacts: AddressBook) -> list:
     """
     The method for searching contacts by address.
 
@@ -157,7 +185,11 @@ def search_contacts_by_address(contacts: Record) -> []:
 
     while True:
         print(SEPARATOR)
-        input_value = input(f"|{INDENT}|{'Enter address or press Enter to skip'}: ")
+        input_value = input(
+            Color.BLUE
+            + f"{INDENT}{'Enter address or press Enter to skip'}: "
+            + Color.RESET
+        )
         if 2 < len(input_value) < 41:
             result = []
             for number, record in enumerate(contacts.values()):
@@ -167,10 +199,14 @@ def search_contacts_by_address(contacts: Record) -> []:
             return result
 
         print(SEPARATOR)
-        print(f"|{INDENT}|{'The address must contain 3-40 characters':<{FIELD}}|")
+        print(
+            Color.RED
+            + f"{INDENT}{'The address must contain 3-40 characters':<{FIELD}}|"
+            + Color.RESET
+        )
 
 
-def show_result(result: []) -> None:
+def show_result(result: list) -> None:
     """
     The method to display the result.
 
@@ -187,3 +223,17 @@ def show_result(result: []) -> None:
     else:
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
+
+
+def search_notes_by_field(notebook: NoteBook, *_) -> None:
+    """
+    The method for searching notes.
+
+    :param notebook: An NoteBook
+    :return: None
+    """
+
+    if not len(notebook):
+        print(SEPARATOR)
+        print(Color.YELLOW + f"{INDENT}{'Note book is empty':<{FIELD}}|" + Color.RESET)
+        return

@@ -13,7 +13,7 @@ def search_upcoming_birthday_contacts(book: AddressBook, *_) -> None:
     :return: None
     """
 
-    if not len(book):
+    if len(book) == 0:
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Contact book is empty':<{FIELD}}|")
         return
@@ -34,7 +34,9 @@ def handle_book(book: AddressBook) -> None:
     contacts = get_contacts(book, today, end_date)
 
     print(SEPARATOR)
-    print(f"|{INDENT}|{'Days range ' + today.strftime('%d.%m.%Y') + ' - ' + end_date.strftime('%d.%m.%Y'):<{FIELD}}|")
+    print(
+        f"{INDENT}{'Days range ' + today.strftime('%d.%m.%Y') + ' - ' + end_date.strftime('%d.%m.%Y'):<{FIELD}}|"
+    )
 
     if len(contacts):
         print(SEPARATOR)
@@ -44,7 +46,9 @@ def handle_book(book: AddressBook) -> None:
             print(f"|{number + 1:^{COLUMN_1}}|{record}|")
     else:
         print(SEPARATOR)
-        print(f"|{' ' * COLUMN_1}|{'There are no happy birthday contacts in this range':<{FIELD}}|")
+        print(
+            f"|{' ' * COLUMN_1}|{'There are no happy birthday contacts in this range':<{FIELD}}|"
+        )
 
 
 def get_days() -> int:
@@ -57,15 +61,16 @@ def get_days() -> int:
     while True:
         print(SEPARATOR)
         input_value = input(
-            f"|{INDENT}|{'Enter the number of days for which birthdays will be displayed starting from today'}: ")
+            f"{INDENT}{'Enter the number of days for which birthdays will be displayed starting from today'}: "
+        )
         if input_value and input_value.isdigit():
             return int(input_value)
 
         print(SEPARATOR)
-        print(f"|{INDENT}|{'The number must be of integer type only':<{FIELD}}|")
+        print(f"{INDENT}{'The number must be of integer type only':<{FIELD}}|")
 
 
-def get_contacts(book: AddressBook, today: date, end_date: date) -> []:
+def get_contacts(book: AddressBook, today: date, end_date: date) -> list:
     """
     The method filters contacts falling within a date range by the birthday field.
 
@@ -75,7 +80,9 @@ def get_contacts(book: AddressBook, today: date, end_date: date) -> []:
     contacts = []
     for contact in book.values():
         if contact.birthday is not None:
-            formatted = datetime(year=today.year, month=contact.birthday.month, day=contact.birthday.day).date()
+            formatted = datetime(
+                year=today.year, month=contact.birthday.month, day=contact.birthday.day
+            ).date()
             if today <= formatted <= end_date:
                 contacts.append(contact)
     return contacts
