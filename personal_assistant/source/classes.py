@@ -259,7 +259,7 @@ class Record:
         The method checks if the name matches the passed value.
         """
 
-        if self.name.value.lower() == name.lower():
+        if name.lower() in self.name.value.lower():
             return self
 
     def search_by_phone(self, phone: str):
@@ -268,7 +268,7 @@ class Record:
         """
 
         for item in self.phones:
-            if item.value == phone:
+            if phone in item.value:
                 return self
 
     def search_by_birthday(self, birthday: str):
@@ -276,7 +276,7 @@ class Record:
         The method checks if the birthday matches the passed value.
         """
 
-        if str(self.birthday) == birthday:
+        if birthday in str(self.birthday):
             return self
 
     def search_by_email(self, email: str):
@@ -284,7 +284,7 @@ class Record:
         The method checks if the email matches the passed value.
         """
 
-        if str(self.email).lower() == email.lower():
+        if email.lower() in str(self.email).lower():
             return self
 
     def search_by_address(self, address: str):
@@ -292,7 +292,7 @@ class Record:
         The method checks if the address matches the passed value.
         """
 
-        if str(self.address).lower() == address.lower():
+        if address.lower() in str(self.address).lower():
             return self
 
     def __str__(self) -> str:

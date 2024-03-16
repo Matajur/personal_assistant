@@ -97,7 +97,7 @@ def search_contacts_by_phone(contacts: AddressBook) -> list:
         input_value = input(
             Color.BLUE + f"{INDENT}{'Enter phone (ex. +380991234567)'}: " + Color.RESET
         )
-        if re.match(r"\+\d{12}", input_value):
+        if re.match(r'^\+?\d+$', input_value):
             result = []
             for number, record in enumerate(contacts.values()):
                 search_by_phone = record.search_by_phone(input_value)
@@ -126,9 +126,7 @@ def search_contacts_by_birthday(contacts: AddressBook) -> list:
         input_value = input(
             Color.BLUE + f"{INDENT}{'Enter birthday (ex. DD.MM.YYYY)'}: " + Color.RESET
         )
-        if re.match(
-            r"^(0[1-9]|[1-2][0-9]|3[0-1])\.(0[1-9]|1[0-2])\.\d{4}$", input_value
-        ):
+        if re.match(r'^[\d.]+$', input_value):
             result = []
             for number, record in enumerate(contacts.values()):
                 search_by_birthday = record.search_by_birthday(input_value)
@@ -159,7 +157,7 @@ def search_contacts_by_email(contacts: AddressBook) -> list:
             + f"{INDENT}{'Enter email (ex. example@mail.com)'}: "
             + Color.RESET
         )
-        if re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", input_value):
+        if 2 < len(input_value) < 41:
             result = []
             for number, record in enumerate(contacts.values()):
                 search_by_email = record.search_by_email(input_value)
