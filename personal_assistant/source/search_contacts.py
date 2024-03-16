@@ -3,7 +3,7 @@
 import re
 from typing import Callable, Any
 
-from source.classes import Record, AddressBook, NoteBook
+from source.classes import AddressBook
 from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER, Color
 
 
@@ -221,17 +221,3 @@ def show_result(result: list) -> None:
     else:
         print(SEPARATOR)
         print(f"|{' ' * COLUMN_1}|{'Empty result':<{FIELD}}|")
-
-
-def search_notes_by_field(notebook: NoteBook, *_) -> None:
-    """
-    The method for searching notes.
-
-    :param notebook: An NoteBook
-    :return: None
-    """
-
-    if not len(notebook):
-        print(SEPARATOR)
-        print(Color.YELLOW + f"{INDENT}{'Note book is empty':<{FIELD}}|" + Color.RESET)
-        return

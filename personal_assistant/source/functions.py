@@ -15,7 +15,8 @@ from source.constants import (
     NOTE_HEADER,
     Color,
 )
-from source.search_contacts import search_contacts_by_field, search_notes_by_field
+from source.search_contacts import search_contacts_by_field
+from source.search_notes import search_notes_by_field
 
 
 def input_error(message: str):
@@ -305,7 +306,7 @@ def contact_finder(book: AddressBook) -> Record | None:
 
 
 def save_or_discard(
-    new_record: Record | Notice, *old_record: Record | Notice
+        new_record: Record | Notice, *old_record: Record | Notice
 ) -> bool | None:
     """
     Function to save record o note
@@ -535,8 +536,8 @@ def helper(*_) -> None:
     print(SEPARATOR)
     print(
         (
-            Color.MAGENTA
-            + f"{INDENT}{'Come on! No help needed, just select a command from the list below':<{FIELD}}|"
-            + Color.RESET
+                Color.MAGENTA
+                + f"{INDENT}{'Come on! No help needed, just select a command from the list below':<{FIELD}}|"
+                + Color.RESET
         )
     )

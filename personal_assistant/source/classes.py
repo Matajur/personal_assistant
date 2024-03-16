@@ -360,7 +360,7 @@ class Notice:
         The method checks if the note matches the passed value.
         """
 
-        if self.note.value.lower() == note.lower():
+        if note.lower() in str(self.note).lower():
             return self
 
     def search_by_tag(self, tag: str):
@@ -369,7 +369,7 @@ class Notice:
         """
 
         for item in self.tags:
-            if item.value == tag:
+            if tag.lower() in str(item).lower():
                 return self
 
     def __str__(self) -> str:
