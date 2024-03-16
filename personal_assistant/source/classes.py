@@ -7,39 +7,9 @@ from datetime import datetime
 from source.constants import COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
 
 
-class BirthdayFormatError(Exception):
+class ValidationError(Exception):
     """
-    Incorrect birthday format error.
-    """
-
-
-class BirthdayValidationError(Exception):
-    """
-    Incorrect birthday date error.
-    """
-
-
-class NameValidationError(Exception):
-    """
-    Incorrect name format error.
-    """
-
-
-class PhoneIndexError(Exception):
-    """
-    Incorrect phone index error.
-    """
-
-
-class PhoneValidationError(Exception):
-    """
-    Incorrect phone number format error.
-    """
-
-
-class RecordValidationError(Exception):
-    """
-    Error of creating an entry with an existing name in the contact book.
+    Error of creating an entry with an inappropriate field format.
     """
 
 
@@ -57,8 +27,26 @@ class Field:
 
 class Address(Field):
     """
-    A class for storing an address.
+    A class for storing an address. Has length validation from 3 to 40 characters.
     """
+
+    @property
+    def value(self):
+        """
+        A method that validates name.
+        """
+
+        return self._value
+
+    @value.setter
+    def value(self, name):
+        """
+        A method that validates name.
+        """
+
+        if not 2 < len(str(name)) < 41:
+            raise ValidationError()
+        self._value = name
 
 
 class Birthday(Field):
@@ -99,9 +87,9 @@ class Birthday(Field):
         try:
             birth = datetime.strptime(birthday, "%d.%m.%Y").date()
         except ValueError as exc:
-            raise BirthdayFormatError() from exc
-        if not 0 < (datetime.today().date() - birth).days < 100 * 365.4:
-            raise BirthdayValidationError()
+            raise ValidationError() from exc
+        if not 0 <= (datetime.today().date() - birth).days <= 100 * 365.4:
+            raise ValidationError()
         self._value = datetime.strptime(birthday, "%d.%m.%Y").date()
 
     def __str__(self):
@@ -127,13 +115,13 @@ class Email(Field):
         A method that validates name.
         """
         if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", email):
-            raise NameValidationError()
+            raise ValidationError()
         self._value = email
 
 
 class Name(Field):
     """
-    A class for storing a contact name. Required field, min 3 characters.
+    A class for storing a contact name. Required field, min 3, max 20 characters.
     """
 
     @property
@@ -150,9 +138,15 @@ class Name(Field):
         A method that validates name.
         """
 
-        if len(str(name)) < 3:
-            raise NameValidationError()
+        if not 2 < len(str(name)) < 21:
+            raise ValidationError()
         self._value = name
+
+
+class Note(Field):
+    """
+    A class for storing notes.
+    """
 
 
 class Phone(Field):
@@ -175,8 +169,14 @@ class Phone(Field):
         """
 
         if not re.match(r"\+\d{12}", phone):
-            raise PhoneValidationError()
+            raise ValidationError()
         self._value = phone
+
+
+class Tag(Field):
+    """
+    A class of tags for notes.
+    """
 
 
 class Record:
@@ -184,8 +184,8 @@ class Record:
     A class for storing information about a contact, including name and contacts list.
     """
 
-    def __init__(self, name: str):
-        self.name = Name(name)
+    def __init__(self):
+        self.name = Name("__default__")
         self.phones = []
         self.birthday = None
         self.email = None
@@ -211,6 +211,13 @@ class Record:
         """
 
         self.email = Email(email)
+
+    def add_name(self, name: str):
+        """
+        A method that adds a name to the record.
+        """
+
+        self.name = Name(name)
 
     def add_phone(self, phone: str):
         """
@@ -245,7 +252,7 @@ class Record:
             if item.value == phone:
                 return index
             index += 1
-        raise PhoneIndexError()
+        raise ValidationError()
 
     def search_by_name(self, name: str):
         """
@@ -297,6 +304,83 @@ class Record:
         return f"{self.name.value:^{COLUMN_2}}|{str(self.email):^{COLUMN_3}}|{str(numbers):^{COLUMN_4}}|{str(self.birthday):^{COLUMN_5}}|{str(self.address):^{COLUMN_6}}"
 
 
+class Notice:
+    """
+    A class for storing user notes.
+    """
+
+    def __init__(self):
+        self.note = Name("__default__")
+        self.tags = []
+
+    def add_note(self, note: str):
+        """
+        A method that adds a note to notice.
+        """
+
+        self.note = Note(note)
+
+    def add_tag(self, tag: str):
+        """
+        A method that adds a new tag to the notice.
+        """
+
+        self.tags.append(Tag(tag))
+
+    def remove_tag(self, tag: str):
+        """
+        A method that removes a tag from the notice.
+        """
+
+        index = self.find_tag(tag)
+        self.tags.pop(index)
+
+    def edit_tag(self, tags: list):
+        """
+        A method that edits a tag in the notice.
+        """
+
+        index = self.find_tag(tags[0])
+        self.tags[index] = Tag(tags[1])
+
+    def find_tag(self, tag: str):
+        """
+        A method that finds an index of the tag in the notice.
+        """
+
+        index = 0
+        for item in self.tags:
+            if item.value == tag:
+                return index
+            index += 1
+        raise ValidationError()
+
+    def search_by_note(self, note: str):
+        """
+        The method checks if the note matches the passed value.
+        """
+
+        if self.note.value.lower() == note.lower():
+            return self
+
+    def search_by_tag(self, tag: str):
+        """
+        The method checks if the tag matches the passed value.
+        """
+
+        for item in self.tags:
+            if item.value == tag:
+                return self
+
+    def __str__(self) -> str:
+        numbers = (
+            "; ".join(f"{i + 1}: {p.value}" for i, p in enumerate(self.tags))
+            if self.tags
+            else None
+        )
+        return f"{str(numbers):^{COLUMN_2 + COLUMN_3 + 1}}|{self.note.value:^{COLUMN_4 + COLUMN_5 + COLUMN_6 + 2}}"
+
+
 class AddressBook(UserDict):
     """
     A class for storing and managing records.
@@ -308,7 +392,7 @@ class AddressBook(UserDict):
         """
 
         if str(record.name) in self.data.keys():
-            raise RecordValidationError()
+            raise ValidationError()
         self.data[str(record.name)] = record
 
     def find(self, name: str) -> Record:
@@ -324,3 +408,32 @@ class AddressBook(UserDict):
         """
 
         self.data.pop(name)
+
+
+class NoteBook(UserDict):
+    """
+    A class for storing and managing notes with tags.
+    """
+
+    def add_notice(self, notice: Notice) -> None:
+        """
+        A method that adds a notice to the note book.
+        """
+
+        if str(notice.note) in self.data.keys():
+            raise ValidationError()
+        self.data[str(notice.note)] = notice
+
+    def find(self, note: str) -> Notice:
+        """
+        A method that finds a notice in the note book.
+        """
+
+        return self.data[note]
+
+    def delete(self, note: str) -> None:
+        """
+        A method that removes a record from the address book.
+        """
+
+        self.data.pop(note)

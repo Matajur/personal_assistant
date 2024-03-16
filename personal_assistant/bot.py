@@ -2,14 +2,15 @@
 
 import pickle
 
-from source.classes import AddressBook
-from source.constants import COLUMN_1, SPAN, FIELD, INDENT, SEPARATOR
+from source.classes import AddressBook, NoteBook
+from source.constants import COLUMN_1, SPAN, FIELD, INDENT, SEPARATOR, Color
 from source.functions import get_command, parse_input
 
 BACKUP = "source/backup.dat"
+STORAGE = "source/storage.dat"
 
 
-def loader() -> AddressBook:
+def loader() -> tuple[AddressBook, NoteBook]:
     """
     Function to load saved contact book.
 
@@ -21,7 +22,14 @@ def loader() -> AddressBook:
             book.data = pickle.load(file)
     except FileNotFoundError:
         pass
-    return book
+
+    notebook = NoteBook()
+    try:
+        with open(STORAGE, "rb") as file:
+            notebook.data = pickle.load(file)
+    except FileNotFoundError:
+        pass
+    return (book, notebook)
 
 
 def main() -> None:
@@ -29,35 +37,50 @@ def main() -> None:
     Function that provides Command Line Interface.
     """
     print(SEPARATOR)
-    print(f"|{'Welcome to the assistant bot!':^{SPAN}}|")
-    book = loader()
+    print(Color.GREEN + f"|{'Welcome to the assistant bot!':^{SPAN}}|" + Color.RESET)
+    book, notebook = loader()
     if book.data:
-        print(f"|{'Contact book successfully loaded':^{SPAN}}|")
+        print(
+            Color.GREEN
+            + f"|{'Contact book successfully loaded':^{SPAN}}|"
+            + Color.RESET
+        )
 
     while True:
         plotter()
         print(SEPARATOR)
-        user_input = input(f"|{INDENT}|Type the command: ")
+        user_input = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
         command, *args = parse_input(user_input)
 
         if command == "exit":
             print(SEPARATOR)
             decision = (
-                input(f"|{INDENT}|Do you want to save changes? Y/N [Y]: ")
+                input(
+                    Color.BLUE
+                    + f"{INDENT}Do you want to save changes? Y/N [Y]: "
+                    + Color.RESET
+                )
                 .lower()
                 .strip()
             )
             print(SEPARATOR)
             if decision in ("y", ""):
-                saver(book)
-                print(f"|{INDENT}|{'Changes saved, good bye!':<{FIELD}}|")
+                saver(book, notebook)
+                print(
+                    Color.GREEN
+                    + f"{INDENT}{'Changes saved, good bye!':<{FIELD}}|"
+                    + Color.RESET
+                )
                 print(SEPARATOR)
                 break
-            print(f"|{INDENT}|{'Good bye!':<{FIELD}}|")
+            print(f"{INDENT}{Color.GREEN + 'Good bye!':<{FIELD}}|" + Color.RESET)
             print(SEPARATOR)
             break
 
-        get_command(command)(book, *args)
+        if command in ("6", "7", "8", "9"):
+            get_command(command)(notebook, *args)
+        else:
+            get_command(command)(book, *args)
 
 
 def plotter() -> None:
@@ -82,7 +105,7 @@ def plotter() -> None:
         print(f"|{key:^{COLUMN_1}}|{value:<{FIELD}}|")
 
 
-def saver(book: AddressBook) -> None:
+def saver(book: AddressBook, notebook: NoteBook) -> None:
     """
     Function to save contact book to file.
 
@@ -91,6 +114,9 @@ def saver(book: AddressBook) -> None:
     if book.data:
         with open(BACKUP, "wb") as file:
             pickle.dump(book.data, file)
+    if notebook.data:
+        with open(STORAGE, "wb") as file:
+            pickle.dump(notebook.data, file)
 
 
 if __name__ == "__main__":
