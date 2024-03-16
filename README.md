@@ -14,13 +14,13 @@ Personal assistant for managing contacts and notes
 8. Edit and delete notes;
 9. Add "tags", keywords describing the subject and subject of the record to the notes;
 10. Search and sort notes by keywords (tags);
-11. The bot must analyze the entered text and try to guess what the user wants from it and offer the closest command to execute
+11. The bot analyzes the entered text and tries to guess what contact the user wants to find and offers the closest matches
 
 ## Installation instruction:
 
-1. Run the console command "pip install personal_assistant"
-2. Run console command "run_bot"
+1. Run the console command "pip install -i https://test.pypi.org/simple/ pa-quadro"
+2. Run console command "qbot"
 3. Enjoy
 
 Sincerely yours,
-Project-Team-1
+Project Team Quadro
