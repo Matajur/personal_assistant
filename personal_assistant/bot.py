@@ -73,7 +73,7 @@ def main() -> None:
                 )
                 print(SEPARATOR)
                 break
-            print(f"{INDENT}{Color.GREEN + 'Good bye!':<{FIELD}}|" + Color.RESET)
+            print(Color.GREEN + f"{INDENT}{'Good bye!':<{FIELD}}|" + Color.RESET)
             print(SEPARATOR)
             break
 

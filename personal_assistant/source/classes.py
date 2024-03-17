@@ -226,13 +226,36 @@ class Record:
 
         self.phones.append(Phone(phone))
 
-    def remove_phone(self, phone: str):
+    def remove_address(self):
+        """
+        A method that removes the address from the record.
+        """
+        self.address = None
+    
+    def remove_birthday(self):
+        """
+        A method that removes the birthday from the record.
+        """
+        self.birthday = None
+
+    def remove_email(self):
+        """
+        A method that removes the email from the record.
+        """
+        self.email = None
+
+    def remove_phone(self, index: int):
         """
         A method that removes a phone number from the record.
         """
 
-        index = self.find_phone(phone)
         self.phones.pop(index)
+
+    def modify_phone(self, phone :str, index: int):
+        """
+        A method that modifies a phone in the record.
+        """
+        self.phones[index] = Phone(phone)
 
     def edit_phone(self, phones: list):
         """
