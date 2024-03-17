@@ -47,6 +47,8 @@ def input_error(message: str):
                 print(SEPARATOR)
                 print(Color.RED + f"{INDENT}{message:<{FIELD}}|" + Color.RESET)
                 return False
+            except ValueError:
+                return "Invalid"
 
         return inner
 
@@ -89,9 +91,13 @@ def get_manager(command: str):
     commands = {
         "1": name_setter,
         "2": address_setter,
-        "3": email_setter,
-        "4": phone_setter,
-        "5": birthday_setter,
+        "3": address_resetter,
+        "4": email_setter,
+        "5": email_resetter,
+        "6": phone_modifier,
+        "7": phone_resetter,
+        "8": birthday_setter,
+        "9": birthday_resetter,
     }
 
     cmd = commands.get(command)
@@ -108,8 +114,8 @@ def contact_adder(book: AddressBook, *_) -> None:
     :return: None, prints only a message about the success or failure of the operation
     """
     print(SEPARATOR)
-    record = Record()
     while True:
+        record = Record()
         result = name_setter(record)
         if result == 1:
             print(SEPARATOR)
@@ -227,11 +233,15 @@ def contact_manager(book: AddressBook, *_) -> None:
         interface = {
             "1": "Modify contact name",
             "2": "Modify contact address",
-            "3": "Modify contact email",
-            "4": "Modify contact phone",
-            "5": "Modify contact birthday",
-            "8": "Delete contact",
-            "0": "Back to main menu",
+            "3": "Delete contact address",
+            "4": "Modify contact email",
+            "5": "Delete contact email",
+            "6": "Add or modify contact phone",
+            "7": "Delete contact phone",
+            "8": "Modify contact birthday",
+            "9": "Modify contact birthday",
+            "0": "Delete contact",
+            "": "Enter to skip",
         }
         print(SEPARATOR)
         for key, value in interface.items():
@@ -239,21 +249,15 @@ def contact_manager(book: AddressBook, *_) -> None:
         print(SEPARATOR)
 
         while True:
-            user_input = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
-            command, *_ = parse_input(user_input)
-            if command == "0":
+            command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+            if command == "":
                 print(SEPARATOR)
                 print(SKIPPER)
                 return
-            if command == "8":
-                book.delete(record.name.value)
-                print(SEPARATOR)
-                print(
-                    Color.YELLOW
-                    + f"{INDENT}{'Contact deleted':<{FIELD}}|"
-                    + Color.RESET
-                )
+            if command == "0":
+                contact_eraser(record, book)
                 return
+
             new_record = deepcopy(record)
 
             print(SEPARATOR)
@@ -273,6 +277,79 @@ def contact_manager(book: AddressBook, *_) -> None:
         else:
             print(SEPARATOR)
             print(SKIPPER)
+
+
+def address_resetter(record: Record) -> int:
+    """
+    Function to delete address
+
+    :param record: a record from contact book
+    :return: 2 if operation is successful
+    """
+    record.remove_address()
+    return 2
+
+
+def phone_resetter(record: Record) -> int:
+    """
+    Function to delete phone
+
+    :param record: a record from contact book
+    :return: 2 if operation is successful
+    """
+    for i, _ in enumerate(record.phones):
+        print(f"|{i+1:^{COLUMN_1}}|{'Delete related number':<{FIELD}}|")
+
+    print(f"{INDENT}{'Type Enter or any other button to skip':<{FIELD}}|")
+
+    print(SEPARATOR)
+    command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+
+    try:
+        command = int(command) - 1
+    except ValueError:
+        pass
+    if command not in list(range(len(record.phones))):
+        return 1
+
+    record.remove_phone(command)
+    return 2
+
+
+def birthday_resetter(record: Record) -> int:
+    """
+    Function to delete birthday
+
+    :param record: a record from contact book
+    :return: 2 if operation is successful
+    """
+    record.remove_birthday()
+    return 2
+
+
+def email_resetter(record: Record) -> int:
+    """
+    Function to delete email
+
+    :param record: a record from contact book
+    :return: 2 if operation is successful
+    """
+    record.remove_email()
+    return 2
+
+
+def contact_eraser(record: Record, book: AddressBook) -> int:
+    """
+    Function to delete a record
+
+    :param record: a dictionary with user notes
+    :param book: a dictionary with user contacts
+    :return: 3 if operation is successful
+    """
+    book.delete(record.name.value)
+    print(SEPARATOR)
+    print(Color.YELLOW + f"{INDENT}{'Contact deleted':<{FIELD}}|" + Color.RESET)
+    return 3
 
 
 @input_error("Exact this note is not present in the note book")
@@ -407,6 +484,59 @@ def phone_setter(record: Record) -> int:
     return 2
 
 
+def phone_modifier(record: Record) -> int:
+    """
+    Function to add or modify a phone number in the record
+
+    :param record: a record from contact book
+    :return: 2 if operation is successful or 1 if should be skipped
+    """
+    for i, _ in enumerate(record.phones):
+        print(f"|{i+1:^{COLUMN_1}}|{'Modify related number':<{FIELD}}|")
+    if len(record.phones) != 2:
+        print(f"|{9:^{COLUMN_1}}|{'Add new phone number':<{FIELD}}|")
+
+    print(f"{INDENT}{'Type Enter or any other button to skip':<{FIELD}}|")
+
+    print(SEPARATOR)
+    command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+    try:
+        command = int(command) - 1
+    except ValueError:
+        pass
+    if command not in list(range(len(record.phones))) or not 8:
+        return 1
+    if command == 8:
+        while True:
+            result = phone_setter(record)
+            if result:
+                return result
+    while True:
+        result = phone_changer(record, command)
+        if result:
+            return result
+
+
+@input_error("The phone number must be in +380991234567 format")
+def phone_changer(record: Record, index: int) -> int:
+    """
+    Function to change a note
+
+    :param record: a record from the address book
+    :param index: index of a phone to change
+    :return: 2 if operation is successful or 1 if should be skipped
+    """
+    phone = input(
+        Color.BLUE
+        + f"{INDENT}{'Enter new phone (ex. +380991234567) or press Enter to skip'}: "
+        + Color.RESET
+    )
+    if not phone:
+        return 1
+    record.modify_phone(phone, index)
+    return 2
+
+
 def tag_setter(notice: Notice) -> int:
     """
     Function to add tags to a note
@@ -485,7 +615,8 @@ def show_all(book: AddressBook | NoteBook, *_) -> None:
             contact list / notebook is empty
     """
     chunk_size = 5
-    items = list(book.values())
+    sorted_book = dict(sorted(book.items()))
+    items = list(sorted_book.values())
     total_items = len(items)
     if not total_items:
         print(SEPARATOR)
@@ -516,6 +647,7 @@ def show_all(book: AddressBook | NoteBook, *_) -> None:
         start_index = end_index
 
 
+@input_error("Invalid command")
 def parse_input(user_input: str) -> Tuple[str, ...]:
     """
     Function to parse commands received from the user using the CLI.
