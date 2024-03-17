@@ -231,7 +231,7 @@ class Record:
         A method that removes the address from the record.
         """
         self.address = None
-    
+
     def remove_birthday(self):
         """
         A method that removes the birthday from the record.
@@ -251,7 +251,7 @@ class Record:
 
         self.phones.pop(index)
 
-    def modify_phone(self, phone :str, index: int):
+    def modify_phone(self, phone: str, index: int):
         """
         A method that modifies a phone in the record.
         """
@@ -350,12 +350,11 @@ class Notice:
 
         self.tags.append(Tag(tag))
 
-    def remove_tag(self, tag: str):
+    def remove_tag(self, index: int):
         """
         A method that removes a tag from the notice.
         """
 
-        index = self.find_tag(tag)
         self.tags.pop(index)
 
     def edit_tag(self, tags: list):
@@ -394,6 +393,19 @@ class Notice:
         for item in self.tags:
             if tag.lower() in str(item).lower():
                 return self
+
+    def give_all_tags(self) -> list:
+        """
+        The method return all the notes as list of strings.
+        """
+        result = [i.value.lower() for i in self.tags]
+        return result
+
+    def modify_tag(self, tag: str, index: int):
+        """
+        A method that modifies a tag in the record.
+        """
+        self.tags[index] = Tag(tag)
 
     def __str__(self) -> str:
         numbers = (

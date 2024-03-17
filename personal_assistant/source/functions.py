@@ -195,7 +195,7 @@ def note_adder(notebook: NoteBook, *_) -> None:
             break
 
     if notice.note.value != "__default__":
-        while True:
+        for _ in range(3):
             if tag_setter(notice) == 1:
                 break
 
@@ -225,58 +225,57 @@ def contact_manager(book: AddressBook, *_) -> None:
         if record is None:
             print(SEPARATOR)
             print(SKIPPER)
-            break
+            return
         if record:
             break
 
-    if not record is None:
-        interface = {
-            "1": "Modify contact name",
-            "2": "Modify contact address",
-            "3": "Delete contact address",
-            "4": "Modify contact email",
-            "5": "Delete contact email",
-            "6": "Add or modify contact phone",
-            "7": "Delete contact phone",
-            "8": "Modify contact birthday",
-            "9": "Modify contact birthday",
-            "0": "Delete contact",
-            "": "Enter to skip",
-        }
-        print(SEPARATOR)
-        for key, value in interface.items():
-            print(f"|{key:^{COLUMN_1}}|{value:<{FIELD}}|")
-        print(SEPARATOR)
+    interface = {
+        "1": "Modify contact name",
+        "2": "Modify contact address",
+        "3": "Delete contact address",
+        "4": "Modify contact email",
+        "5": "Delete contact email",
+        "6": "Add or modify contact phone",
+        "7": "Delete contact phone",
+        "8": "Modify contact birthday",
+        "9": "Modify contact birthday",
+        "0": "Delete contact",
+        "": "Enter to skip",
+    }
+    print(SEPARATOR)
+    for key, value in interface.items():
+        print(f"|{key:^{COLUMN_1}}|{value:<{FIELD}}|")
+    print(SEPARATOR)
 
-        while True:
-            command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
-            if command == "":
-                print(SEPARATOR)
-                print(SKIPPER)
-                return
-            if command == "0":
-                contact_eraser(record, book)
-                return
-
-            new_record = deepcopy(record)
-
-            print(SEPARATOR)
-            result = get_manager(command)(new_record)
-            if result == 1:
-                print(SEPARATOR)
-                print(SKIPPER)
-                break
-            if result == 2:
-                break
-
-        if save_or_discard(new_record, record):
-            book.delete(record.name.value)
-            book.add_record(new_record)
-            print(SEPARATOR)
-            print(Color.GREEN + f"{INDENT}{'Contact updated':<{FIELD}}|" + Color.RESET)
-        else:
+    while True:
+        command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+        if command == "":
             print(SEPARATOR)
             print(SKIPPER)
+            return
+        if command == "0":
+            record_eraser(record, book)
+            return
+
+        new_record = deepcopy(record)
+
+        print(SEPARATOR)
+        result = get_manager(command)(new_record)
+        if result == 1:
+            print(SEPARATOR)
+            print(SKIPPER)
+            break
+        if result == 2:
+            break
+
+    if save_or_discard(new_record, record):
+        book.delete(record.name.value)
+        book.add_record(new_record)
+        print(SEPARATOR)
+        print(Color.GREEN + f"{INDENT}{'Contact updated':<{FIELD}}|" + Color.RESET)
+    else:
+        print(SEPARATOR)
+        print(SKIPPER)
 
 
 def address_resetter(record: Record) -> int:
@@ -338,29 +337,228 @@ def email_resetter(record: Record) -> int:
     return 2
 
 
-def contact_eraser(record: Record, book: AddressBook) -> int:
+def record_eraser(record: Record | Notice, book: AddressBook | NoteBook) -> int:
     """
     Function to delete a record
 
-    :param record: a dictionary with user notes
-    :param book: a dictionary with user contacts
+    :param record: a dictionary with user contacts or notes
+    :param book: a dictionary with user records
     :return: 3 if operation is successful
     """
-    book.delete(record.name.value)
+    if isinstance(record, Record):
+        book.delete(record.name.value)
+    else:
+        book.delete(record.note.value)
     print(SEPARATOR)
-    print(Color.YELLOW + f"{INDENT}{'Contact deleted':<{FIELD}}|" + Color.RESET)
+    print(Color.YELLOW + f"{INDENT}{'Record deleted':<{FIELD}}|" + Color.RESET)
     return 3
 
 
 @input_error("Exact this note is not present in the note book")
-def note_manager(notebook: AddressBook, *_) -> None:
+def note_manager(notebook: NoteBook, *_) -> None:
     """
     Function to delete or update notes
 
     :param notebook: a dictionary with user notes
     :return: None, prints only a message about the success or failure of the operation
     """
-    pass
+    while True:
+        record = note_finder(notebook)
+        if record == 1:
+            print(SEPARATOR)
+            print(SKIPPER)
+            return
+        if isinstance(record, Notice):
+            break
+
+    interface = {
+        "1": "Modify note",
+        "2": "Add or modify tag",
+        "3": "Delete tag",
+        "0": "Delete note",
+        "": "Enter to skip",
+    }
+    print(SEPARATOR)
+    for key, value in interface.items():
+        print(f"|{key:^{COLUMN_1}}|{value:<{FIELD}}|")
+    print(SEPARATOR)
+
+    while True:
+        command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+        if command == "":
+            print(SEPARATOR)
+            print(SKIPPER)
+            return
+        if command == "0":
+            record_eraser(record, notebook)  # type: ignore
+            return
+
+        new_record = deepcopy(record)
+
+        print(SEPARATOR)
+        result = get_handler(command)(new_record)
+        if result == 1:
+            print(SEPARATOR)
+            print(SKIPPER)
+            break
+        if result == 2:
+            break
+
+    if save_or_discard(new_record, record):
+        notebook.delete(record.note.value)
+        notebook.add_notice(new_record)
+        print(SEPARATOR)
+        print(Color.GREEN + f"{INDENT}{'Note updated':<{FIELD}}|" + Color.RESET)
+    else:
+        print(SEPARATOR)
+        print(SKIPPER)
+
+
+def get_handler(command: str):
+    """
+    A function to map user input to appropriate commands.
+
+    :param command: user input in str format
+    :return: function
+    """
+    commands = {
+        "1": note_setter,
+        "2": tag_modifier,
+        "3": tag_resetter,
+    }
+
+    cmd = commands.get(command)
+    if not cmd:
+        return invalid_command
+    return cmd
+
+
+def note_finder(notebook: NoteBook) -> Notice | int:
+    """
+    Function to find a note by key word
+
+    :param notebook: a dictionary with user notes
+    :return: note
+    """
+    print(SEPARATOR)
+    hint = input(
+        Color.BLUE
+        + f"{INDENT}{'Enter a hint to search for a note to change or Enter to skip: '}"
+        + Color.RESET
+    ).lower()
+    if hint == "":
+        print(SEPARATOR)
+        print(SKIPPER)
+        return 1
+    result = []
+    for rec in notebook.data.values():
+        if hint in rec.note.value.lower() or hint in rec.give_all_tags():
+            result.append(rec)
+    if not result:
+        print(SEPARATOR)
+        print(
+            Color.YELLOW
+            + f"{INDENT}{'No such word in your notes':<{FIELD}}|"
+            + Color.YELLOW
+        )
+        return 2
+
+    print(SEPARATOR)
+    print(NOTE_HEADER)
+    print(SEPARATOR)
+    for number, record in enumerate(result):
+        print(f"|{number + 1:^{COLUMN_1}}|{record}|")
+    print(SEPARATOR)
+
+    index = input(
+        Color.BLUE
+        + f"{INDENT}Type an index of the note you want to work with or Enter to skip: "
+        + Color.RESET
+    )
+    try:
+        index = int(index) - 1
+    except ValueError:
+        pass
+    if index not in list(range(len(result))):
+        return 1
+    return result[index]
+
+
+def tag_resetter(record: Notice) -> int:
+    """
+    Function to delete tag
+
+    :param record: a record from contact book
+    :return: 2 if operation is successful
+    """
+    for i, _ in enumerate(record.tags):
+        print(f"|{i+1:^{COLUMN_1}}|{'Delete related number':<{FIELD}}|")
+
+    print(f"{INDENT}{'Type Enter or any other button to skip':<{FIELD}}|")
+
+    print(SEPARATOR)
+    command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+
+    try:
+        command = int(command) - 1
+    except ValueError:
+        pass
+    if command not in list(range(len(record.tags))):
+        return 1
+
+    record.remove_tag(command)
+    return 2
+
+
+def tag_modifier(record: Notice) -> int:
+    """
+    Function to add or modify a tag in the record
+
+    :param record: a record from note book
+    :return: 2 if operation is successful or 1 if should be skipped
+    """
+    for i, _ in enumerate(record.tags):
+        print(f"|{i+1:^{COLUMN_1}}|{'Modify related tag':<{FIELD}}|")
+    if len(record.tags) != 3:
+        print(f"|{9:^{COLUMN_1}}|{'Add new tag':<{FIELD}}|")
+
+    print(f"{INDENT}{'Type Enter or any other button to skip':<{FIELD}}|")
+
+    print(SEPARATOR)
+    command = input(Color.BLUE + f"{INDENT}Type the command: " + Color.RESET)
+    try:
+        command = int(command) - 1
+    except ValueError:
+        pass
+    if command == 8:
+        while True:
+            result = tag_setter(record)
+            if result:
+                return result
+    if command not in list(range(len(record.tags))):
+        return 1
+    
+    while True:
+        result = tag_changer(record, command)
+        if result:
+            return result
+
+
+def tag_changer(record: Notice, index: int) -> int:
+    """
+    Function to change a tag
+
+    :param record: a record from the note book
+    :param index: index of a tag to change
+    :return: 2 if operation is successful or 1 if should be skipped
+    """
+    tag = input(
+        Color.BLUE + f"{INDENT}{'Enter new tag or press Enter to skip'}: " + Color.RESET
+    )
+    if not tag:
+        return 1
+    record.modify_tag(tag, index)
+    return 2
 
 
 @input_error("Exact this name is not present in the address book")
@@ -383,7 +581,7 @@ def contact_finder(book: AddressBook) -> Record | None:
 
 
 def save_or_discard(
-        new_record: Record | Notice, *old_record: Record | Notice
+    new_record: Record | Notice, *old_record: Record | Notice
 ) -> bool | None:
     """
     Function to save record o note
@@ -393,7 +591,10 @@ def save_or_discard(
     :return: True if the record should be saved or None
     """
     print(SEPARATOR)
-    print(HEADER)
+    if isinstance(new_record, Record):
+        print(HEADER)
+    else:
+        print(NOTE_HEADER)
     print(SEPARATOR)
     if old_record:
         print(Color.YELLOW + f"|{'Old':^{COLUMN_1}}|{old_record[0]}|" + Color.RESET)
@@ -504,13 +705,14 @@ def phone_modifier(record: Record) -> int:
         command = int(command) - 1
     except ValueError:
         pass
-    if command not in list(range(len(record.phones))) or not 8:
-        return 1
     if command == 8:
         while True:
             result = phone_setter(record)
             if result:
                 return result
+    if command not in list(range(len(record.phones))):
+        return 1
+    
     while True:
         result = phone_changer(record, command)
         if result:
@@ -520,7 +722,7 @@ def phone_modifier(record: Record) -> int:
 @input_error("The phone number must be in +380991234567 format")
 def phone_changer(record: Record, index: int) -> int:
     """
-    Function to change a note
+    Function to change a phone
 
     :param record: a record from the address book
     :param index: index of a phone to change
@@ -668,8 +870,8 @@ def helper(*_) -> None:
     print(SEPARATOR)
     print(
         (
-                Color.MAGENTA
-                + f"{INDENT}{'Come on! No help needed, just select a command from the list below':<{FIELD}}|"
-                + Color.RESET
+            Color.MAGENTA
+            + f"{INDENT}{'Come on! No help needed, just select a command from the list below':<{FIELD}}|"
+            + Color.RESET
         )
     )
