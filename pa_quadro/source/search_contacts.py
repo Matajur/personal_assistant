@@ -3,8 +3,8 @@
 import re
 from typing import Callable, Any
 
-from source.classes import AddressBook
-from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER, Color
+from .classes import AddressBook
+from .constants import COLUMN_1, SEPARATOR, FIELD, INDENT, HEADER, Color
 
 
 def search_contacts_by_field(book: AddressBook, *_) -> None:
@@ -15,7 +15,7 @@ def search_contacts_by_field(book: AddressBook, *_) -> None:
     :return: None
     """
 
-    if not len(book):
+    if len(book) == 0:
         print(SEPARATOR)
         print(
             Color.YELLOW + f"{INDENT}{'Contact book is empty':<{FIELD}}|" + Color.RESET
@@ -54,7 +54,7 @@ def get_search_by_method() -> Callable[[Any], Any]:
         "4": search_contacts_by_email,
         "5": search_contacts_by_address,
     }
-    return commands.get(command)
+    return commands.get(command)  # type: ignore
 
 
 def search_contacts_by_name(contacts: AddressBook) -> list:
@@ -70,7 +70,7 @@ def search_contacts_by_name(contacts: AddressBook) -> list:
         input_value = input(Color.BLUE + f"{INDENT}{'Enter name'}: " + Color.RESET)
         if 2 < len(input_value) < 21:
             result = []
-            for number, record in enumerate(contacts.values()):
+            for _, record in enumerate(contacts.values()):
                 search_by_name = record.search_by_name(input_value)
                 if search_by_name:
                     result.append(search_by_name)
@@ -97,9 +97,9 @@ def search_contacts_by_phone(contacts: AddressBook) -> list:
         input_value = input(
             Color.BLUE + f"{INDENT}{'Enter phone (ex. +380991234567)'}: " + Color.RESET
         )
-        if re.match(r'^\+?\d+$', input_value):
+        if re.match(r"^\+?\d+$", input_value):
             result = []
-            for number, record in enumerate(contacts.values()):
+            for _, record in enumerate(contacts.values()):
                 search_by_phone = record.search_by_phone(input_value)
                 if search_by_phone:
                     result.append(search_by_phone)
@@ -126,9 +126,9 @@ def search_contacts_by_birthday(contacts: AddressBook) -> list:
         input_value = input(
             Color.BLUE + f"{INDENT}{'Enter birthday (ex. DD.MM.YYYY)'}: " + Color.RESET
         )
-        if re.match(r'^[\d.]+$', input_value):
+        if re.match(r"^[\d.]+$", input_value):
             result = []
-            for number, record in enumerate(contacts.values()):
+            for _, record in enumerate(contacts.values()):
                 search_by_birthday = record.search_by_birthday(input_value)
                 if search_by_birthday:
                     result.append(search_by_birthday)
@@ -159,7 +159,7 @@ def search_contacts_by_email(contacts: AddressBook) -> list:
         )
         if 2 < len(input_value) < 41:
             result = []
-            for number, record in enumerate(contacts.values()):
+            for _, record in enumerate(contacts.values()):
                 search_by_email = record.search_by_email(input_value)
                 if search_by_email:
                     result.append(search_by_email)
@@ -190,7 +190,7 @@ def search_contacts_by_address(contacts: AddressBook) -> list:
         )
         if 2 < len(input_value) < 41:
             result = []
-            for number, record in enumerate(contacts.values()):
+            for _, record in enumerate(contacts.values()):
                 search_by_address = record.search_by_address(input_value)
                 if search_by_address:
                     result.append(search_by_address)

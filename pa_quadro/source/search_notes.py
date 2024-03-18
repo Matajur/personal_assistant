@@ -2,8 +2,8 @@
 
 from typing import Callable, Any
 
-from source.classes import NoteBook
-from source.constants import COLUMN_1, SEPARATOR, FIELD, INDENT, NOTE_HEADER, Color
+from .classes import NoteBook
+from .constants import COLUMN_1, SEPARATOR, FIELD, INDENT, NOTE_HEADER, Color
 
 
 def search_notes_by_field(notebook: NoteBook, *_) -> None:
@@ -14,7 +14,7 @@ def search_notes_by_field(notebook: NoteBook, *_) -> None:
     :return: None
     """
 
-    if not len(notebook):
+    if len(notebook) == 0:
         print(SEPARATOR)
         print(Color.YELLOW + f"{INDENT}{'Note book is empty':<{FIELD}}|" + Color.RESET)
         return
@@ -46,7 +46,7 @@ def get_search_method() -> Callable[[Any], Any]:
         "1": search_by_tag,
         "2": search_by_text,
     }
-    return commands.get(command)
+    return commands.get(command)  # type: ignore
 
 
 def search_by_tag(notebook: NoteBook) -> list:
@@ -63,7 +63,7 @@ def search_by_tag(notebook: NoteBook) -> list:
         input_value = input(Color.BLUE + f"{INDENT}{'Enter tag'}: " + Color.RESET)
         if 1 < len(input_value) < 21:
             result = []
-            for number, notice in enumerate(notebook.values()):
+            for _, notice in enumerate(notebook.values()):
                 notice_with_tag = notice.search_by_tag(input_value)
                 if notice_with_tag:
                     result.append(notice_with_tag)
@@ -88,12 +88,10 @@ def search_by_text(notebook: NoteBook) -> list:
     while True:
         print(SEPARATOR)
 
-        input_value = input(
-            Color.BLUE + f"{INDENT}{'Enter text'}: " + Color.RESET
-        )
+        input_value = input(Color.BLUE + f"{INDENT}{'Enter text'}: " + Color.RESET)
         if 1 < len(input_value) < 41:
             result = []
-            for number, notice in enumerate(notebook.values()):
+            for _, notice in enumerate(notebook.values()):
                 notice_with_text = notice.search_by_note(input_value)
                 if notice_with_text:
                     result.append(notice_with_text)

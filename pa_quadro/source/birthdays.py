@@ -2,8 +2,8 @@
 
 from datetime import datetime, timedelta, date
 
-from source.classes import AddressBook
-from source.constants import COLUMN_1, SEPARATOR, INDENT, HEADER, FIELD
+from .classes import AddressBook
+from .constants import COLUMN_1, SEPARATOR, INDENT, HEADER, FIELD
 
 
 def search_upcoming_birthday_contacts(book: AddressBook, *_) -> None:
@@ -38,7 +38,7 @@ def handle_book(book: AddressBook) -> None:
         f"{INDENT}{'Days range ' + today.strftime('%d.%m.%Y') + ' - ' + end_date.strftime('%d.%m.%Y'):<{FIELD}}|"
     )
 
-    if len(contacts):
+    if len(contacts) > 0:
         print(SEPARATOR)
         print(HEADER)
         print(SEPARATOR)

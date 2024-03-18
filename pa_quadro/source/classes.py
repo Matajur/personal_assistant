@@ -4,7 +4,7 @@ import re
 from collections import UserDict
 from datetime import datetime
 
-from source.constants import COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
+from .constants import COLUMN_2, COLUMN_3, COLUMN_4, COLUMN_5, COLUMN_6
 
 
 class ValidationError(Exception):

@@ -3,9 +3,9 @@
 from copy import deepcopy
 from typing import Tuple
 
-from source.birthdays import search_upcoming_birthday_contacts
-from source.classes import Record, AddressBook, ValidationError, NoteBook, Notice
-from source.constants import (
+from .birthdays import search_upcoming_birthday_contacts
+from .classes import Record, AddressBook, ValidationError, NoteBook, Notice
+from .constants import (
     COLUMN_1,
     SEPARATOR,
     INDENT,
@@ -15,8 +15,8 @@ from source.constants import (
     NOTE_HEADER,
     Color,
 )
-from source.search_contacts import search_contacts_by_field
-from source.search_notes import search_notes_by_field
+from .search_contacts import search_contacts_by_field
+from .search_notes import search_notes_by_field
 
 
 def input_error(message: str):
@@ -537,7 +537,7 @@ def tag_modifier(record: Notice) -> int:
                 return result
     if command not in list(range(len(record.tags))):
         return 1
-    
+
     while True:
         result = tag_changer(record, command)
         if result:
@@ -712,7 +712,7 @@ def phone_modifier(record: Record) -> int:
                 return result
     if command not in list(range(len(record.phones))):
         return 1
-    
+
     while True:
         result = phone_changer(record, command)
         if result:

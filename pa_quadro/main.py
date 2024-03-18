@@ -2,12 +2,12 @@
 
 import pickle
 
-from source.classes import AddressBook, NoteBook
-from source.constants import COLUMN_1, SPAN, FIELD, INDENT, SEPARATOR, Color
-from source.functions import get_command, parse_input
+from .source.classes import AddressBook, NoteBook
+from .source.constants import COLUMN_1, SPAN, FIELD, INDENT, SEPARATOR, Color
+from .source.functions import get_command, parse_input
 
-BACKUP = "source/backup.dat"
-STORAGE = "source/storage.dat"
+BACKUP = "backup.dat"
+STORAGE = "storage.dat"
 
 
 def loader() -> tuple[AddressBook, NoteBook]:
